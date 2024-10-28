@@ -27,7 +27,6 @@ android {
     namespace = "com.example.excam"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
-    compileSdkVersion = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -41,12 +40,10 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1
-        versionName = "1.0"
-        minSdkVersion = 21
-        targetSdkVersion = 34
-        multiDexEnabled = true
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
     }
+    
 
     buildTypes {
         release {
@@ -55,6 +52,13 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    // Dependensi lain yang diperlukan
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
@@ -66,3 +70,4 @@ dependencies {
 flutter {
     source = "../.."
 }
+

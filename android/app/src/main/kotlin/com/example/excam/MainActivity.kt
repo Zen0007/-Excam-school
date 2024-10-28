@@ -19,23 +19,34 @@ class MainActivity : FlutterActivity() {
 
     // Define a method channel name
     private val CHANNEL = "kiosk_mode_channel"
+    private val REQUEST_CODE_ENABLE_ADMIN = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mAdminComponentName = MyDeviceAdminReceiver.getComponentName(this)
         mDevicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
-        // Set immersive mode
-        setImmersiveMode(true)
+        // Memeriksa apakah admin perangkat sudah aktif
+        if (!mDevicePolicyManager.isAdminActive(mAdminComponentName)) {
+            // Jika admin belum diaktifkan, meminta pengguna untuk mengaktifkannya
+            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mAdminComponentName)
+            startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN)
+        } else {
+            // Admin sudah diaktifkan, lanjutkan dengan pengaturan kiosk
+            setKioskPolicies(true)
+        }
     }
 
     private fun setKioskPolicies(enable: Boolean) {
         if (enable) {
             mDevicePolicyManager.setLockTaskPackages(mAdminComponentName, arrayOf(packageName))
             startLockTask()
+            setImmersiveMode(true) // Mengaktifkan mode imersif saat kiosk mode diaktifkan
             Toast.makeText(this, "Kiosk Mode Activated", Toast.LENGTH_SHORT).show()
         } else {
             stopLockTask()
+            setImmersiveMode(false) // Menonaktifkan mode imersif saat kiosk mode dinonaktifkan
             Toast.makeText(this, "Kiosk Mode Deactivated", Toast.LENGTH_SHORT).show()
         }
     }
@@ -53,9 +64,18 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        // Do nothing to prevent exiting the app
-    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
+            if (resultCode == RESULT_OK) {
+                // Admin diaktifkan, lanjutkan dengan pengaturan kiosk
+                setKioskPolicies(true)
+            } else {
+                // Admin tidak diaktifkan, berikan pesan kepada pengguna
+                Toast.makeText(this, "Admin Device not activated", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }   
 
     // Configure the Flutter engine
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -73,7 +93,9 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "endKioskMode" -> {
-                    setKioskPolicies(false)
+                    stopLockTask()
+                    Toast.makeText(this, "Kiosk Mode Deactivated", Toast.LENGTH_SHORT).show()
+                    //setImmersiveMode(false)
                     result.success(null)
                 }
                 else -> {

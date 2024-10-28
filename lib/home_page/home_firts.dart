@@ -9,14 +9,14 @@ class HomeFirts extends StatefulWidget {
 }
 
 class _HomeFirtsState extends State<HomeFirts> {
-  final platfom = const MethodChannel("com.example.kioskapp/kiosk");
+  final platfom = const MethodChannel("kiosk_mode_channel");
 
   Future<void> start() async {
     try {
       await platfom.invokeMethod('startKioskMode');
       print("runig");
-    } catch (e, s) {
-      debugPrint("$e ---------");
+    } on PlatformException catch (e, s) {
+      debugPrint("${e.message} ---------");
       print("is not working $s");
     }
   }
@@ -25,23 +25,28 @@ class _HomeFirtsState extends State<HomeFirts> {
     try {
       await platfom.invokeMethod("endKioskMode");
       print("stop");
-    } catch (e, s) {
-      debugPrint("$e========================");
+    } on PlatformException catch (e, s) {
+      debugPrint("${e.message}========================");
       print("is not working $s");
     }
-  }
-
-  @override
-  void initState() {
-    start();
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(onPressed: end, child: const Text("EXCITE")),
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 100,
+            ),
+            ElevatedButton(onPressed: end, child: const Text("EXCITE")),
+            const SizedBox(
+              height: 30,
+            ),
+            ElevatedButton(onPressed: start, child: const Text("start")),
+          ],
+        ),
       ),
     );
   }

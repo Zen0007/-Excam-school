@@ -1,0 +1,8 @@
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <policy android:name="android.app.deviceadmin.BLOCK_UNINSTALL_PACKAGES"/>
+        <policy android:name="android.app.deviceadmin.DISABLE_KEYGUARD"/>
+        <policy android:name="android.app.deviceadmin.WATCH_LOGS"/>
+        <policy android:name="android.app.deviceadmin.RESET_PASSWORD"/>
+    </uses-policies>
+</device-admin>

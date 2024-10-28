@@ -1,3 +1,20 @@
+buildscript {
+    ext {
+        // Menambahkan atau mengubah compileSdkVersion dan targetSdkVersion
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        ndkVersion = "21.4.7075529" // sesuaikan sesuai kebutuhan
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.5.0' // Sesuaikan dengan versi terbaru
+        // Plugin lainnya
+    }
+}
+
 allprojects {
     repositories {
         google()

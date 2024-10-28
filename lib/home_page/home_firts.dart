@@ -12,13 +12,7 @@ class HomeFirts extends StatefulWidget {
 }
 
 class _HomeFirtsState extends State<HomeFirts> with WidgetsBindingObserver {
-  static const platform = MethodChannel("com.example.kiosk/mode");
-
-  @override
-  void initState() {
-    super.initState();
-    start();
-  }
+  static const platform = MethodChannel("kiosk_mode_channel");
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -39,17 +33,11 @@ class _HomeFirtsState extends State<HomeFirts> with WidgetsBindingObserver {
     }
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
   Future<void> start() async {
     try {
       await platform.invokeMethod("startKioskMode");
       print("------------------------------------");
-    } catch (e, stacktrace) {
+    } on PlatformException catch (e, stacktrace) {
       debugPrint('$e');
       print(stacktrace);
     }
@@ -57,9 +45,9 @@ class _HomeFirtsState extends State<HomeFirts> with WidgetsBindingObserver {
 
   Future<void> end() async {
     try {
-      await platform.invokeMethod("stopKioskMode");
+      await platform.invokeMethod("endKioskMode");
       print("this working --------------------------------------");
-    } catch (e, stacktrace) {
+    } on PlatformException catch (e, stacktrace) {
       debugPrint("$e");
       print(stacktrace);
     }
@@ -84,8 +72,19 @@ class _HomeFirtsState extends State<HomeFirts> with WidgetsBindingObserver {
         ],
       ),
       backgroundColor: Colors.amber[400],
-      body: const Center(
-        child: Text("home firts"),
+      body: Center(
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 100,
+            ),
+            ElevatedButton(onPressed: end, child: const Text("EXCITE")),
+            const SizedBox(
+              height: 50,
+            ),
+            ElevatedButton(onPressed: start, child: const Text("start")),
+          ],
+        ),
       ),
     );
   }

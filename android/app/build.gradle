@@ -27,6 +27,7 @@ android {
     namespace = "com.example.excam"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    compileSdkVersion = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -43,7 +44,8 @@ android {
         versionCode = 1
         versionName = "1.0"
         minSdkVersion = 21
-        targetSdkVersion = 33
+        targetSdkVersion = 34
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -53,6 +55,12 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'com.android.support:multidex:1.0.3'
+    // Dependensi lain yang diperlukan
 }
 
 flutter {

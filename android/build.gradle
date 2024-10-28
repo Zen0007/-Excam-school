@@ -1,20 +1,14 @@
 buildscript {
-    ext {
-        // Menambahkan atau mengubah compileSdkVersion dan targetSdkVersion
-        compileSdkVersion = 33
-        targetSdkVersion = 33
-        ndkVersion = "21.4.7075529" // sesuaikan sesuai kebutuhan
-    }
+    ext.kotlin_version = '1.8.0' // Update this line
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.5.0' // Sesuaikan dengan versi terbaru
-        // Plugin lainnya
+       classpath 'com.android.tools.build:gradle:8.0.0'// Ensure this is compatible with your Kotlin version
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
-
 allprojects {
     repositories {
         google()

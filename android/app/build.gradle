@@ -27,6 +27,7 @@ android {
     namespace = "com.example.excam"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    compileSdkVersion = 31
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -42,7 +43,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        minSdkVersion = 21
+        targetSdkVersion = 31
     }
+    
 
     buildTypes {
         release {
@@ -51,8 +55,16 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    // Dependensi lain yang diperlukan
 }
 
 flutter {
     source = "../.."
 }
+

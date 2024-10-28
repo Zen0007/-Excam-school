@@ -12,6 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import android.app.Activity
+import android.content.Intent
+import androidx.appcompat.app.AlertDialog
+
 
 class MainActivity : FlutterActivity() {
     private lateinit var mDevicePolicyManager: DevicePolicyManager
@@ -23,18 +27,14 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mAdminComponentName = MyDeviceAdminReceiver.getComponentName(this)
-        mDevicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        setContentView(R.layout.activity_main)
 
-        // Memeriksa apakah admin perangkat sudah aktif
-        if (!mDevicePolicyManager.isAdminActive(mAdminComponentName)) {
-            // Jika admin belum diaktifkan, meminta pengguna untuk mengaktifkannya
-            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mAdminComponentName)
-            startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN)
-        } else {
-            // Admin sudah diaktifkan, lanjutkan dengan pengaturan kiosk
-            setKioskPolicies(true)
+        mDevicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DeviceP`olicyManager
+        mAdminComponentName = ComponentName(this, MyDeviceAdminReceiver::class.java)
+
+        // Tampilkan pop-up hanya saat aplikasi pertama kali dijalankan
+        if (!devicePolicyManager.isAdminActive(componentName)) {
+            showAdminPermissionDialog()
         }
     }
 
@@ -49,6 +49,19 @@ class MainActivity : FlutterActivity() {
             setImmersiveMode(false) // Menonaktifkan mode imersif saat kiosk mode dinonaktifkan
             Toast.makeText(this, "Kiosk Mode Deactivated", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showAdminPermissionDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Izin Admin Diperlukan")
+        builder.setMessage("Aplikasi ini memerlukan izin admin perangkat untuk fitur tambahan. Aktifkan sekarang?")
+        builder.setPositiveButton("Ya") { _, _ ->
+            requestAdminPermission()
+        }
+        builder.setNegativeButton("Tidak") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 
     private fun setImmersiveMode(enable: Boolean) {
@@ -67,15 +80,24 @@ class MainActivity : FlutterActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == Activity.RESULT_OK) {
                 // Admin diaktifkan, lanjutkan dengan pengaturan kiosk
                 setKioskPolicies(true)
             } else {
+                showAdminPermissionDialog()
                 // Admin tidak diaktifkan, berikan pesan kepada pengguna
                 Toast.makeText(this, "Admin Device not activated", Toast.LENGTH_SHORT).show()
             }
         }
     }   
+
+    private fun requestAdminPermission() {
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+            putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Izin ini diperlukan untuk fitur keamanan tambahan.")
+        }
+        startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN)
+    }
 
     // Configure the Flutter engine
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -105,3 +127,56 @@ class MainActivity : FlutterActivity() {
         }
     }
 }
+
+
+
+// class MainActivity : AppCompatActivity() {
+
+//     private lateinit var devicePolicyManager: DevicePolicyManager
+//     private lateinit var componentName: ComponentName
+
+//     override fun onCreate(savedInstanceState: Bundle?) {
+//         super.onCreate(savedInstanceState)
+//         setContentView(R.layout.activity_main)
+
+//         devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+//         componentName = ComponentName(this, MyDeviceAdminReceiver::class.java)
+
+//         // Tampilkan pop-up hanya saat aplikasi pertama kali dijalankan
+//         if (!devicePolicyManager.isAdminActive(componentName)) {
+//             showAdminPermissionDialog()
+//         }
+//     }
+
+//     private fun showAdminPermissionDialog() {
+//         val builder = AlertDialog.Builder(this)
+//         builder.setTitle("Izin Admin Diperlukan")
+//         builder.setMessage("Aplikasi ini memerlukan izin admin perangkat untuk fitur tambahan. Aktifkan sekarang?")
+//         builder.setPositiveButton("Ya") { _, _ ->
+//             requestAdminPermission()
+//         }
+//         builder.setNegativeButton("Tidak") { dialog, _ ->
+//             dialog.dismiss()
+//         }
+//         builder.show()
+//     }
+
+//     private fun requestAdminPermission() {
+//         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+//             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+//             putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Izin ini diperlukan untuk fitur keamanan tambahan.")
+//         }
+//         startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN)
+//     }
+
+//     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//         super.onActivityResult(requestCode, resultCode, data)
+//         if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
+//             if (resultCode == Activity.RESULT_OK) {
+//                 // Admin izin diaktifkan
+//             } else {
+//                 // Admin izin tidak diaktifkan
+//             }
+//         }
+//     }
+// }

@@ -27,7 +27,7 @@ android {
     namespace = "com.example.excam"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
-    compileSdkVersion = 31
+    compileSdkVersion = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -44,7 +44,7 @@ android {
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
         minSdkVersion = 21
-        targetSdkVersion = 31
+        targetSdkVersion = 34
     }
     
 

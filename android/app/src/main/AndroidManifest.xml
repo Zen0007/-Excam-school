@@ -1,10 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.excam">
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-<<<<<<< HEAD
     <application android:resizeableActivity="false" android:launchMode="singleTask" android:label="excam" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
-=======
-    <application android:label="excam" android:name="${applicationName}" android:icon="@mipmap/ic_launcher">
->>>>>>> 065740ecf4314d8a1033c874bde0fe7cbe7de3cd
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:taskAffinity="" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -14,28 +10,14 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
-<<<<<<< HEAD
-
-=======
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
->>>>>>> 065740ecf4314d8a1033c874bde0fe7cbe7de3cd
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
-<<<<<<< HEAD
         <receiver android:name=".MyAdminReceiver" android:permission="android.permission.BIND_DEVICE_ADMIN" >
             <meta-data android:name="android.app.device_admin"  android:resource="@xml/device_admin_receiver" />
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-=======
-
-        <receiver android:name=".MyDeviceAdminReceiver" android:permission="android.permission.BIND_DEVICE_ADMIN" android:exported="true">
-            <meta-data android:name="android.app.device_admin" android:resource="@xml/device_admin_receiver" />
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
->>>>>>> 065740ecf4314d8a1033c874bde0fe7cbe7de3cd
             </intent-filter>
         </receiver>
         <meta-data android:name="flutterEmbedding" android:value="2" />

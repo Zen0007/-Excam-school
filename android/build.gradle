@@ -1,22 +1,14 @@
 buildscript {
-<<<<<<< HEAD
     ext.kotlin_version = '1.8.0' // Update this line
-=======
-    ext.kotlin_version = '1.5.31' // atau versi terbaru
->>>>>>> 065740ecf4314d8a1033c874bde0fe7cbe7de3cd
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-<<<<<<< HEAD
        classpath 'com.android.tools.build:gradle:8.0.0'// Ensure this is compatible with your Kotlin version
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
-=======
-
->>>>>>> 065740ecf4314d8a1033c874bde0fe7cbe7de3cd
 allprojects {
     repositories {
         google()

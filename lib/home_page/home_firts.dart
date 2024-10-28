@@ -9,15 +9,39 @@ class HomeFirts extends StatefulWidget {
 }
 
 class _HomeFirtsState extends State<HomeFirts> {
-  void start() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+  final platfom = const MethodChannel("com.example.kioskapp/kiosk");
+
+  Future<void> start() async {
+    try {
+      await platfom.invokeMethod('startKioskMode');
+      print("runig");
+    } catch (e, s) {
+      debugPrint("$e ---------");
+      print("is not working $s");
+    }
+  }
+
+  Future<void> end() async {
+    try {
+      await platfom.invokeMethod("endKioskMode");
+      print("stop");
+    } catch (e, s) {
+      debugPrint("$e========================");
+      print("is not working $s");
+    }
+  }
+
+  @override
+  void initState() {
+    start();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text("home firts"),
+        child: ElevatedButton(onPressed: end, child: const Text("EXCITE")),
       ),
     );
   }

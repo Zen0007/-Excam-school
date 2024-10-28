@@ -11,6 +11,8 @@ import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : FlutterActivity() {
     private lateinit var mDevicePolicyManager: DevicePolicyManager
@@ -42,7 +44,7 @@ class MainActivity : FlutterActivity() {
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
-    if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
+    if (requestCode == REQUEST_CODE) {
         if (resultCode == Activity.RESULT_OK) {
             // Admin perangkat diaktifkan, lanjutkan dengan pengaturan kiosk
             setKioskPolicies(true)

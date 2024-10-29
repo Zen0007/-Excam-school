@@ -5,5 +5,10 @@
         <policy android:name="android.app.lock_task" />
         <limit-password />
         <watch-login />
+        <reset-password />
+        <force-lock />
+        <wipe-data />
+        <expire-password />
+        <disable-camera />
     </uses-policies>
 </device-admin>

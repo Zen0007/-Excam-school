@@ -1,7 +1,9 @@
+package com.example.excam
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import android.content.ComponentName
 
 class MyDeviceAdminReceiver : DeviceAdminReceiver() {
 

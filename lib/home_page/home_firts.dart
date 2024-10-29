@@ -42,12 +42,12 @@ class _HomeFirtsState extends State<HomeFirts> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // Optionally, you can start kiosk mode here if desired
-    start();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // Optionally, you can start kiosk mode here if desired
+  //   start();
+  // }
 
   @override
   Widget build(BuildContext context) {

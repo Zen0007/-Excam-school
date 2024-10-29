@@ -1,8 +1,12 @@
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
-        <policy android:name="android.app.device_admin" />
-        <policy android:name="android.app.lock_task" />
+        <!-- Allows app to limit password functionality -->
         <policy android:name="limit_password" />
-          <policy android:name="android.app.deviceadmin.ACTIVATE_DEVICE_ADMIN" />
+        <!-- Allows app to enforce device-wide security policies, necessary for kiosk mode -->
+        <policy android:name="force_lock" />
+        <!-- Allows app to monitor and enforce storage encryption -->
+        <policy android:name="reset_password" />
+        <!-- Optional: Allows app to monitor compliance with device policies -->
+        <policy android:name="watch_login" />
     </uses-policies>
 </device-admin>

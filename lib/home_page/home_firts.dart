@@ -15,7 +15,7 @@ class _HomeFirtsState extends State<HomeFirts> {
     try {
       await platfom.invokeMethod('startKioskMode');
       print("runig");
-    } catch (e, s) {
+    } on PlatformException catch (e, s) {
       debugPrint("$e ---------");
       print("is not working $s");
     }
@@ -25,7 +25,7 @@ class _HomeFirtsState extends State<HomeFirts> {
     try {
       await platfom.invokeMethod("endKioskMode");
       print("stop");
-    } catch (e, s) {
+    } on PlatformException catch (e, s) {
       debugPrint("$e========================");
       print("is not working $s");
     }

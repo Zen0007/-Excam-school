@@ -1,12 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
-        <limit-password/>
-        <watch-login/>
-        <reset-password/>
-        <force-lock/>
-        <wipe-data/>
-        <policy android:name="android.app.device_admin" />
-        <policy android:name="android.app.lock_task" />
+        <policy android:name="android.app.device_admin.ACTIVATE_DEVICE_ADMIN" />
+        <policy android:name="android.app.device_admin.RESET_PASSWORD" />
+        <policy android:name="android.app.device_admin.WIPE_DATA" />
     </uses-policies>
 </device-admin>

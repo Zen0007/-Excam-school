@@ -3,22 +3,14 @@ package com.example.excam
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.ComponentName
+import android.widget.Toast
 
 class MyDeviceAdminReceiver : DeviceAdminReceiver() {
     override fun onEnabled(context: Context, intent: Intent) {
-        super.onEnabled(context, intent)
-        // Device admin enabled
+        Toast.makeText(context, "Device Admin Enabled", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDisabled(context: Context, intent: Intent) {
-        super.onDisabled(context, intent)
-        // Device admin disabled
-    }
-
-    companion object {
-        fun getComponentName(context: Context): ComponentName {
-            return ComponentName(context, MyDeviceAdminReceiver::class.java)
-        }
+        Toast.makeText(context, "Device Admin Disabled", Toast.LENGTH_SHORT).show()
     }
 }

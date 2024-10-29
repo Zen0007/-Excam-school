@@ -1,7 +1,8 @@
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
-        <policy android:name="android.app.device_admin.ACTIVATE_DEVICE_ADMIN" />
-        <policy android:name="android.app.device_admin.RESET_PASSWORD" />
-        <policy android:name="android.app.device_admin.WIPE_DATA" />
+        <policy android:name="android.app.device_admin" />
+        <policy android:name="android.app.lock_task" />
+        <policy android:name="limit_password" />
+          <policy android:name="android.app.deviceadmin.ACTIVATE_DEVICE_ADMIN" />
     </uses-policies>
 </device-admin>

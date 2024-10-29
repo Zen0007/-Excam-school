@@ -9,48 +9,67 @@ class HomeFirts extends StatefulWidget {
 }
 
 class _HomeFirtsState extends State<HomeFirts> {
-  final platfom = const MethodChannel("kiosk_mode_channel");
+  static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
+  bool isKioskModeActive = false; // Track the kiosk mode state
 
   Future<void> start() async {
     try {
-      await platfom.invokeMethod('startKioskMode');
-      print("runig");
-    } on PlatformException catch (e, s) {
-      debugPrint("$e ---------");
-      print("is not working $s");
+      await platform.invokeMethod('startKioskMode');
+      setState(() {
+        isKioskModeActive = true; // Update the state
+      });
+      print("Kiosk Mode started");
+    } on PlatformException catch (e) {
+      debugPrint("Error starting kiosk mode: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to start kiosk mode: ${e.message}")),
+      );
     }
   }
 
   Future<void> end() async {
     try {
-      await platfom.invokeMethod("endKioskMode");
-      print("stop");
-    } on PlatformException catch (e, s) {
-      debugPrint("$e========================");
-      print("is not working $s");
+      await platform.invokeMethod("endKioskMode");
+      setState(() {
+        isKioskModeActive = false; // Update the state
+      });
+      print("Kiosk Mode stopped");
+    } on PlatformException catch (e) {
+      debugPrint("Error stopping kiosk mode: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to stop kiosk mode: ${e.message}")),
+      );
     }
   }
 
   @override
   void initState() {
-    start();
     super.initState();
+    // Optionally, you can start kiosk mode here if desired
+    start();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("Kiosk Mode Example")),
       body: Center(
-        child: Column(children: [
-          const SizedBox(
-            height: 100,
-          ),
-          ElevatedButton(onPressed: end, child: const Text("EXCITE")),
-          const SizedBox(
-            height: 40,
-          ),
-          ElevatedButton(onPressed: start, child: const Text("EXCITE")),
-        ]),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 100),
+            ElevatedButton(
+              onPressed:
+                  isKioskModeActive ? end : null, // Disable if not active
+              child: const Text("STOP KIOSK MODE"),
+            ),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: isKioskModeActive ? null : start, // Disable if active
+              child: const Text("START KIOSK MODE"),
+            ),
+          ],
+        ),
       ),
     );
   }

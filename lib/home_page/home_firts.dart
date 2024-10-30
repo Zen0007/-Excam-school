@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,13 +14,29 @@ class _HomeFirtsState extends State<HomeFirts> {
   static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
   bool isKioskModeActive = false; // Track the kiosk mode state
 
-  Future<void> start() async {
+  void start(BuildContext context) async {
     try {
       await platform.invokeMethod('startKioskMode');
       setState(() {
         isKioskModeActive = true; // Update the state
       });
       print("Kiosk Mode started");
+      showDialog(
+        // ignore: use_build_context_synchronously
+        context: context,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text('this kiosk mode is active'),
+          );
+        },
+      );
+      Timer(const Duration(seconds: 3), () {
+        Navigator.of(context).pop(); // Closes the dialog
+      });
+
+      if (!context.mounted) {
+        return;
+      }
     } on PlatformException catch (e) {
       debugPrint("Error starting kiosk mode: ${e.message}");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -27,13 +45,17 @@ class _HomeFirtsState extends State<HomeFirts> {
     }
   }
 
-  Future<void> end() async {
+  void end(BuildContext context) async {
     try {
       await platform.invokeMethod("stopKioskMode");
       setState(() {
         isKioskModeActive = false; // Update the state
       });
       print("Kiosk Mode stopped");
+
+      if (!context.mounted) {
+        return;
+      }
     } on PlatformException catch (e) {
       debugPrint("Error stopping kiosk mode: ${e.message}");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,13 +81,12 @@ class _HomeFirtsState extends State<HomeFirts> {
           children: [
             const SizedBox(height: 100),
             ElevatedButton(
-              onPressed:
-                  isKioskModeActive ? end : null, // Disable if not active
+              onPressed: () => end(context), // Disable if not active
               child: const Text("STOP KIOSK MODE"),
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: isKioskModeActive ? null : start, // Disable if active
+              onPressed: () => start(context), // Disable if active
               child: const Text("START KIOSK MODE"),
             ),
           ],

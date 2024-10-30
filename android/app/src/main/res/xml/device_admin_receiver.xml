@@ -15,5 +15,6 @@
         <policy android:name="android.permission.DISALLOW_ADD_USER" />
         <policy android:name="android.permission.DISALLOW_MOUNT_PHYSICAL_MEDIA" />
         <policy android:name="android.permission.DISALLOW_ADJUST_VOLUME" />
+        <policy android:name="android.app.device_admin"/>
     </uses-policies>
 </device-admin>

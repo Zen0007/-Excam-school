@@ -34,7 +34,7 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mAdminComponentName = MyDeviceAdminReceiver.getComponentName(this)
+        mAdminComponentName = MyAdminReceiver.getComponentName(this)
         mDevicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         mUserManager = getSystemService(Context.USER_SERVICE) as UserManager
 

@@ -1,8 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
-        <policy android:name="android.app.deviceadmin.BLOCK_UNINSTALL_PACKAGES"/>
-        <policy android:name="android.app.deviceadmin.DISABLE_KEYGUARD"/>
-        <policy android:name="android.app.deviceadmin.WATCH_LOGS"/>
-        <policy android:name="android.app.deviceadmin.RESET_PASSWORD"/>
+        <limit-password />
+        <watch-login />
+        <reset-password />
+        <force-lock />
+        <wipe-data />
+        <expire-password />
+        <encrypted-storage />
+        <disable-camera />
+        <disable-keyguard-features />
+        <policy android:name="android.permission.DISALLOW_SAFE_BOOT" />
+        <policy android:name="android.permission.DISALLOW_FACTORY_RESET" />
+        <policy android:name="android.permission.DISALLOW_ADD_USER" />
+        <policy android:name="android.permission.DISALLOW_MOUNT_PHYSICAL_MEDIA" />
+        <policy android:name="android.permission.DISALLOW_ADJUST_VOLUME" />
+        <policy android:name="android.app.device_admin"/>
     </uses-policies>
 </device-admin>

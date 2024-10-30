@@ -27,6 +27,7 @@ android {
     namespace = "com.example.excam"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    compileSdkVersion = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -40,21 +41,40 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1
-        versionName = "1.0"
-        minSdkVersion = 21
-        targetSdkVersion = 33
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
+        minSdkVersion = 23
+        compileSdkVersion = 34
     }
+    
 
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
         }
     }
+     viewBinding {
+        enabled = true
+    }
+
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0' 
+    implementation 'com.google.android.material:material:1.4.0'
+   
+    
+    // Dependensi lain yang diperlukan
 }
 
 flutter {
     source = "../.."
 }
+

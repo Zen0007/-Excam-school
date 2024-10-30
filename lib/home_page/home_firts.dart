@@ -1,6 +1,5 @@
-import 'dart:io';
+import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -11,81 +10,87 @@ class HomeFirts extends StatefulWidget {
   State<HomeFirts> createState() => _HomeFirtsState();
 }
 
-class _HomeFirtsState extends State<HomeFirts> with WidgetsBindingObserver {
-  static const platform = MethodChannel("com.example.kiosk/mode");
+class _HomeFirtsState extends State<HomeFirts> {
+  static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
+  bool isKioskModeActive = false; // Track the kiosk mode state
 
-  @override
-  void initState() {
-    super.initState();
-    start();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused && Platform.isIOS) {
-      showCupertinoDialog(
+  void start(BuildContext context) async {
+    try {
+      await platform.invokeMethod('startKioskMode');
+      setState(() {
+        isKioskModeActive = true; // Update the state
+      });
+      print("Kiosk Mode started");
+      showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: const Text("warning"),
-          content: const Text("don't allow to exit this app "),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text("oke"),
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
-        ),
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text('this kiosk mode is active'),
+          );
+        },
+      );
+      Timer(const Duration(seconds: 3), () {
+        Navigator.of(context).pop(); // Closes the dialog
+      });
+
+      if (!context.mounted) {
+        return;
+      }
+    } on PlatformException catch (e) {
+      debugPrint("Error starting kiosk mode: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to start kiosk mode: ${e.message}")),
       );
     }
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  Future<void> start() async {
-    try {
-      await platform.invokeMethod("startKioskMode");
-      print("------------------------------------");
-    } catch (e, stacktrace) {
-      debugPrint('$e');
-      print(stacktrace);
-    }
-  }
-
-  Future<void> end() async {
+  void end(BuildContext context) async {
     try {
       await platform.invokeMethod("stopKioskMode");
-      print("this working --------------------------------------");
-    } catch (e, stacktrace) {
-      debugPrint("$e");
-      print(stacktrace);
+      setState(() {
+        isKioskModeActive = false; // Update the state
+      });
+      print("Kiosk Mode stopped");
+
+      if (!context.mounted) {
+        return;
+      }
+    } on PlatformException catch (e) {
+      debugPrint("Error stopping kiosk mode: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to stop kiosk mode: ${e.message}")),
+      );
     }
   }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // Optionally, you can start kiosk mode here if desired
+  //   start();
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.blue),
-            onPressed: end,
-            child: const Text(
-              "exit",
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
+      appBar: AppBar(title: const Text("Kiosk Mode Example")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 100),
+            ElevatedButton(
+              onPressed: () => end(context), // Disable if not active
+              child: const Text("STOP KIOSK MODE"),
             ),
-          ),
-        ],
-      ),
-      backgroundColor: Colors.amber[400],
-      body: const Center(
-        child: Text("home firts"),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () => start(context), // Disable if active
+              child: const Text("START KIOSK MODE"),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeFirts extends StatefulWidget {
   const HomeFirts({super.key});
@@ -12,15 +13,27 @@ class HomeFirts extends StatefulWidget {
 
 class _HomeFirtsState extends State<HomeFirts> {
   static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
-  bool isKioskModeActive = false; // Track the kiosk mode state
+  late WebViewController webViewController;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void webView() {
+    webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.amber)
+      ..loadRequest(
+        Uri.parse(''),
+      );
+  }
 
   void start(BuildContext context) async {
     try {
       await platform.invokeMethod('startKioskMode');
-      setState(() {
-        isKioskModeActive = true; // Update the state
-      });
-      print("Kiosk Mode started");
+      debugPrint("Kiosk Mode started");
+
       showDialog(
         // ignore: use_build_context_synchronously
         context: context,
@@ -30,10 +43,13 @@ class _HomeFirtsState extends State<HomeFirts> {
           );
         },
       );
-      Timer(const Duration(seconds: 3), () {
-        Navigator.of(context).pop(); // Closes the dialog
-      });
 
+      Timer(
+        const Duration(seconds: 3),
+        () {
+          Navigator.of(context).pop(); // Closes the dialog
+        },
+      );
       if (!context.mounted) {
         return;
       }
@@ -48,10 +64,7 @@ class _HomeFirtsState extends State<HomeFirts> {
   void end(BuildContext context) async {
     try {
       await platform.invokeMethod("stopKioskMode");
-      setState(() {
-        isKioskModeActive = false; // Update the state
-      });
-      print("Kiosk Mode stopped");
+      debugPrint("Kiosk Mode stopped");
 
       if (!context.mounted) {
         return;
@@ -64,33 +77,32 @@ class _HomeFirtsState extends State<HomeFirts> {
     }
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // Optionally, you can start kiosk mode here if desired
-  //   start();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Kiosk Mode Example")),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 100),
-            ElevatedButton(
-              onPressed: () => end(context), // Disable if not active
-              child: const Text("STOP KIOSK MODE"),
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () => start(context), // Disable if active
-              child: const Text("START KIOSK MODE"),
-            ),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text("Kiosk Mode Example"),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: () => start(context),
+                child: const Text("START KIOSK MODE"),
+              ),
+              const SizedBox(
+                width: 50,
+              ),
+              ElevatedButton(
+                onPressed: () => end(context),
+                child: const Text("STOP KIOSK MODE"),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: WebViewWidget(
+        controller: webViewController,
       ),
     );
   }

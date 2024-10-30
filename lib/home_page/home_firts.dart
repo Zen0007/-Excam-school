@@ -29,7 +29,7 @@ class _HomeFirtsState extends State<HomeFirts> {
 
   Future<void> end() async {
     try {
-      await platform.invokeMethod("endKioskMode");
+      await platform.invokeMethod("stopKioskMode");
       setState(() {
         isKioskModeActive = false; // Update the state
       });

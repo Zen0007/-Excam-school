@@ -1,12 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
-        <!-- Allows app to limit password functionality -->
-        <policy android:name="limit_password" />
-        <!-- Allows app to enforce device-wide security policies, necessary for kiosk mode -->
-        <policy android:name="force_lock" />
-        <!-- Allows app to monitor and enforce storage encryption -->
-        <policy android:name="reset_password" />
-        <!-- Optional: Allows app to monitor compliance with device policies -->
-        <policy android:name="watch_login" />
+        <limit-password />
+        <watch-login />
+        <reset-password />
+        <force-lock />
+        <wipe-data />
+        <expire-password />
+        <encrypted-storage />
+        <disable-camera />
+        <disable-keyguard-features />
+        <policy android:name="android.permission.DISALLOW_SAFE_BOOT" />
+        <policy android:name="android.permission.DISALLOW_FACTORY_RESET" />
+        <policy android:name="android.permission.DISALLOW_ADD_USER" />
+        <policy android:name="android.permission.DISALLOW_MOUNT_PHYSICAL_MEDIA" />
+        <policy android:name="android.permission.DISALLOW_ADJUST_VOLUME" />
     </uses-policies>
 </device-admin>

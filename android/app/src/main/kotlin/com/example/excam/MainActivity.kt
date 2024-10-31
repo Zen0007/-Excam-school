@@ -38,7 +38,7 @@ class MainActivity : FlutterActivity() {
         mDevicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         mUserManager = getSystemService(Context.USER_SERVICE) as UserManager
 
-        // Now it's safe to call isAdmin()
+       // Now it's safe to call isAdmin()
         val isAdmin = isAdmin()
         if (isAdmin) {
             yesIsAdmin()

@@ -40,10 +40,10 @@ class MainActivity : FlutterActivity() {
 
         // Now it's safe to call isAdmin()
         val isAdmin = isAdmin()
-        if (isAdmin) {
-            yesIsAdmin()
+        if (!isAdmin) {
+           requestAdminPermission()
         } else {
-            requestAdminPermission()
+            yesIsAdmin()
         }
     }
 
@@ -70,20 +70,21 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun requestAdminPermission() {
-         val builder =  AlertDialog.Builder(this)
-            .setTitle("Admin Permission Required")
-            .setMessage("This app requires admin permissions to run in kiosk mode.")
-            .setPositiveButton("Yes") { _, _ ->
-                val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mAdminComponentName)
-                startActivityForResult(intent, REQUEST_CODE_ADMIN)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-                finish()
-            }
-        val alert = builder.create()
-          alert.show()
+        val  builder  =  AlertDialog.Builder(this)
+        builder.setTitle("Admin Permission Required")
+             .setMessage("This app requires admin permissions to run in kiosk mode.")
+             .setPositiveButton("Yes") { _, _ ->
+                 val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                 intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mAdminComponentName)
+                 startActivityForResult(intent, REQUEST_CODE_ADMIN)
+             }
+             .setNegativeButton("Cancel") { dialog, _ ->
+                 dialog.dismiss()
+                 finish()
+             }
+        val  alertDialog = builder.create()
+             alertDialog.setTitle("Admin Permission Required")
+             alertDialog.show()
     }
 
     private fun isAdmin(): Boolean {

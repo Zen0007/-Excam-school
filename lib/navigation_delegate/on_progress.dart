@@ -1,3 +1,4 @@
+import 'package:excam/home_page/home_page_web.dart';
 import 'package:flutter/material.dart';
 
 class OnProgress extends StatelessWidget {
@@ -49,6 +50,17 @@ class OnProgress extends StatelessWidget {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomePageWeb(),
+            ),
+          );
+        },
+        child: const Icon(Icons.arrow_back_ios_new_sharp),
       ),
     );
   }

@@ -1,9 +1,11 @@
+import 'package:excam/home_page/home_page_web.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class OnHttpError extends StatelessWidget {
-  const OnHttpError({super.key, required this.audio, required this.error});
-  final Function audio;
+class OnWebResourceError extends StatelessWidget {
+  const OnWebResourceError(
+      {super.key, required this.audio, required this.error});
+  final VoidCallback audio;
   final WebResourceError error;
 
   @override
@@ -16,7 +18,7 @@ class OnHttpError extends StatelessWidget {
           Row(
             children: [
               ElevatedButton(
-                onPressed: () => audio,
+                onPressed: audio,
                 child: const Text("EXIT"),
               ),
             ],
@@ -34,6 +36,17 @@ class OnHttpError extends StatelessWidget {
             child: const Text("yes"),
           )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomePageWeb(),
+            ),
+          );
+        },
+        child: const Icon(Icons.arrow_back_ios),
       ),
     );
   }

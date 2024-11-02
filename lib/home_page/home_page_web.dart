@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'package:excam/navigation_delegate/main_template.dart';
-import 'package:excam/navigation_delegate/on_http_error.dart';
-import 'package:excam/navigation_delegate/on_progress.dart';
-import 'package:excam/navigation_delegate/on_web_resource_error.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -24,6 +21,7 @@ class _HomePageWebState extends State<HomePageWeb> {
   static const String reg =
       r'^(https?:\/\/)?((www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}|localhost|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))(\/[^\s]*)?$';
   bool isValidate = true;
+  static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
 
   @override
   void dispose() {
@@ -36,40 +34,86 @@ class _HomePageWebState extends State<HomePageWeb> {
     try {
       webViewController
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(Colors.amber)
         ..setNavigationDelegate(
           NavigationDelegate(
             onHttpError: (error) {
-              runApp(
-                MainTemplate(
-                  templateWigate: OnHttpError(
-                    audio: audio,
-                    error: error,
-                  ),
-                ),
+              debugPrint('on http Error ');
+              showAdaptiveDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog.adaptive(
+                    title: const Text("on http error"),
+                    content: Text(
+                        "respon status code ${error.response!.statusCode}"),
+                    actions: [
+                      FloatingActionButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("yes"),
+                      ),
+                    ],
+                  );
+                },
               );
             },
             onWebResourceError: (error) {
-              runApp(
-                MainTemplate(
-                  templateWigate: OnWebResourceError(
-                    audio: audio,
-                    error: error,
-                  ),
-                ),
+              debugPrint('on web resourece error ');
+              showAdaptiveDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog.adaptive(
+                    title: const Text("error on web resource"),
+                    content: Text("${error.description} "),
+                    actions: [
+                      FloatingActionButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("yes"),
+                      ),
+                    ],
+                  );
+                },
               );
             },
             onProgress: (progress) {
-              runApp(
-                MainTemplate(
-                  templateWigate: OnProgress(
-                    audio: audio,
-                    progress: progress,
-                  ),
-                ),
+              showAdaptiveDialog(
+                context: context,
+                builder: (context) {
+                  Future.delayed(
+                    const Duration(seconds: 10),
+                    () {
+                      if (!context.mounted) {
+                        return;
+                      }
+                      Navigator.of(context).pop();
+                    },
+                  );
+                  return AlertDialog.adaptive(
+                    title: const Text("Progress"),
+                    content: Row(
+                      children: [
+                        Text(
+                          "this process $progress",
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(
+                          width: 50,
+                        ),
+                        const CircularProgressIndicator.adaptive(),
+                      ],
+                    ),
+                  );
+                },
               );
+              debugPrint('on progress');
             },
           ),
+        )
+        ..addJavaScriptChannel(
+          'Toaster',
+          onMessageReceived: (JavaScriptMessage message) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message.message)),
+            );
+          },
         )
         ..loadRequest(
           Uri.parse(url),
@@ -80,7 +124,7 @@ class _HomePageWebState extends State<HomePageWeb> {
     }
   }
 
-  void _sumbit() {
+  void _sumbit(BuildContext content) {
     try {
       if (_formKey.currentState!.validate()) {
         webView(_nameController.text);
@@ -96,9 +140,15 @@ class _HomePageWebState extends State<HomePageWeb> {
             ),
           ),
         );
-        setState(() {
-          isValidate = false;
-        });
+        setState(
+          () {
+            isValidate = false;
+          },
+        );
+        Timer(
+          const Duration(seconds: 10),
+          () => start(context),
+        );
       }
     } catch (e, s) {
       debugPrint("$e");
@@ -135,6 +185,57 @@ class _HomePageWebState extends State<HomePageWeb> {
     }
   }
 
+  void end(BuildContext context) async {
+    try {
+      await platform.invokeMethod("stopKioskMode");
+      debugPrint("Kiosk Mode stopped");
+
+      if (!context.mounted) {
+        return;
+      }
+    } on PlatformException catch (e) {
+      debugPrint("Error stopping kiosk mode: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to stop kiosk mode: ${e.message}")),
+      );
+    }
+  }
+
+  void start(BuildContext context) async {
+    try {
+      await platform.invokeMethod('startKioskMode');
+      debugPrint("Kiosk Mode started");
+
+      showDialog(
+        // ignore: use_build_context_synchronously
+        context: context,
+        builder: (BuildContext context) {
+          Future.delayed(
+            const Duration(seconds: 10),
+            () {
+              if (!context.mounted) {
+                return;
+              }
+              Navigator.of(context).pop();
+            },
+          );
+          return const AlertDialog(
+            title: Text('this kiosk mode is active'),
+          );
+        },
+      );
+
+      if (!context.mounted) {
+        return;
+      }
+    } on PlatformException catch (e) {
+      debugPrint("Error starting kiosk mode: ${e.message}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to start kiosk mode: ${e.message}")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -143,14 +244,40 @@ class _HomePageWebState extends State<HomePageWeb> {
         backgroundColor: Colors.blue,
         title: const Text("EXCAM APP"),
         actions: [
-          Row(
-            children: [
-              ElevatedButton(
-                onPressed: audio,
-                child: const Text("EXIT"),
-              ),
-            ],
-          ),
+          if (!isValidate)
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    audio();
+                    showAdaptiveDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog.adaptive(
+                          content: const Text("you want to leave"),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                end(context);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("yes"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("cancel"),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: const Text("EXIT"),
+                ),
+              ],
+            ),
         ],
       ),
       body: Container(
@@ -204,9 +331,12 @@ class _HomePageWebState extends State<HomePageWeb> {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                top: 20, left: 10, right: 10),
+                              top: 20,
+                              left: 10,
+                              right: 10,
+                            ),
                             child: ElevatedButton(
-                              onPressed: _sumbit,
+                              onPressed: () => _sumbit(context),
                               child: const Text("NEXT"),
                             ),
                           )
@@ -220,7 +350,10 @@ class _HomePageWebState extends State<HomePageWeb> {
               SingleChildScrollView(
                 child: Column(children: [
                   Container(
+                    width: size.width,
+                    height: size.height,
                     color: Colors.blue[600],
+                    child: WebViewWidget(controller: webViewController),
                   )
                 ]),
               ),

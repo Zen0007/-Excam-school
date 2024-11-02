@@ -1,3 +1,4 @@
+import 'package:excam/home_page/home_page_web.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -35,6 +36,17 @@ class OnHttpError extends StatelessWidget {
             child: const Text("yes"),
           )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomePageWeb(),
+            ),
+          );
+        },
+        child: const Icon(Icons.arrow_back_ios_new_sharp),
       ),
     );
   }

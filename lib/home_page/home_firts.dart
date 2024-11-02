@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -45,7 +44,7 @@ class _HomeFirtsState extends State<HomeFirts> {
       );
 
       Timer(
-        const Duration(seconds: 3),
+        const Duration(seconds: 30),
         () {
           Navigator.of(context).pop(); // Closes the dialog
         },

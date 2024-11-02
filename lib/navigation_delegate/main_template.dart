@@ -1,14 +1,9 @@
-import 'package:excam/home_page/home_page_web.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+class MainTemplate extends StatelessWidget {
+  const MainTemplate({super.key, required this.templateWigate});
+  final Widget templateWigate;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,7 +12,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       color: Colors.amber[600],
-      home: const HomePageWeb(),
+      home: templateWigate,
     );
   }
 }

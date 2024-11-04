@@ -1,66 +1,27 @@
-import 'package:excam/home_page/home_page_web.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
-class OnProgress extends StatelessWidget {
-  const OnProgress({super.key, required this.audio, required this.progress});
+class WebView extends StatelessWidget {
+  const WebView(
+      {super.key, required this.audio, required this.webViewController});
   final VoidCallback audio;
-  final int progress;
+  final WebViewController webViewController;
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text("EXCAM APP"),
-        actions: [
-          Row(
-            children: [
-              ElevatedButton(
-                onPressed: audio,
-                child: const Text("EXIT"),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(40), color: Colors.blue[200]),
-          width: 200,
-          height: 200,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "this prograse",
-                  style: TextStyle(
-                      fontSize: 20, color: Color.fromARGB(255, 0, 0, 0)),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Text(
-                  "$progress",
-                  style: const TextStyle(
-                      fontSize: 40, color: Color.fromARGB(255, 0, 0, 0)),
-                ),
-              ],
-            ),
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              width: size.width,
+              height: size.height,
+              color: Colors.blue[600],
+              child: WebViewWidget(controller: webViewController),
+            )
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HomePageWeb(),
-            ),
-          );
-        },
-        child: const Icon(Icons.arrow_back_ios_new_sharp),
       ),
     );
   }

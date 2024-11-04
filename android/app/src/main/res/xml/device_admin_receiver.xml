@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
-        <limit-password />
-        <watch-login />
-        <reset-password />
-        <force-lock />
-        <wipe-data />
-        <expire-password />
-        <encrypted-storage />
-        <disable-camera />
-        <disable-keyguard-features />
-        <policy android:name="android.permission.DISALLOW_SAFE_BOOT" />
-        <policy android:name="android.permission.DISALLOW_FACTORY_RESET" />
-        <policy android:name="android.permission.DISALLOW_ADD_USER" />
-        <policy android:name="android.permission.DISALLOW_MOUNT_PHYSICAL_MEDIA" />
-        <policy android:name="android.permission.DISALLOW_ADJUST_VOLUME" />
-        <policy android:name="android.app.device_admin"/>
+        <policy android:name="android.app.device_admin.ACTIVATE_DEVICE_ADMIN" />
+        <policy android:name="android.app.device_admin.RESET_PASSWORD" />
+        <policy android:name="android.app.device_admin.WIPE_DATA" />
+        <policy android:name="android.app.device_admin.LIMIT_PASSWORD" />
+        <policy android:name="android.app.device_admin.WATCH_LOGIN" />
+        <policy android:name="android.app.device_admin.FORCE_LOCK" />
+        <policy android:name="android.app.device_admin.EXPIRE_PASSWORD" />
+        <policy android:name="android.app.device_admin.ENCRYPTED_STORAGE" />
+        <policy android:name="android.app.device_admin.DISABLE_CAMERA" />
+        <policy android:name="android.app.device_admin.DISABLE_KEYGUARD_FEATURES" />
+        <policy android:name="android.app.device_admin.DISALLOW_SAFE_BOOT" />
+        <policy android:name="android.app.device_admin.DISALLOW_FACTORY_RESET" />
+        <policy android:name="android.app.device_admin.DISALLOW_ADD_USER" />
+        <policy android:name="android.app.device_admin.DISALLOW_MOUNT_PHYSICAL_MEDIA" />
+        <policy android:name="android.app.device_admin.DISALLOW_ADJUST_VOLUME" />
     </uses-policies>
 </device-admin>

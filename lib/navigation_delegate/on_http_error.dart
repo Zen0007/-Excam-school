@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class OnHttpError extends StatelessWidget {
-  const OnHttpError({super.key, required this.audio, required this.error});
-  final VoidCallback audio;
-  final HttpResponseError error;
+  const OnHttpError({super.key, this.audio, this.error});
+  final VoidCallback? audio;
+  final HttpResponseError? error;
 
   @override
   Widget build(BuildContext context) {
@@ -24,18 +24,85 @@ class OnHttpError extends StatelessWidget {
           ),
         ],
       ),
-      body: AlertDialog(
-        title: const Text("on error "),
-        content: Text(
-            "this error exception ${error.response!.statusCode} for this url "),
-        actions: [
-          FloatingActionButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("yes"),
-          )
-        ],
+      body: Center(
+        child: Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.amber[300]),
+          height: 200,
+          width: 300,
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'warning error on http',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (error!.response!.statusCode == 404) ...[
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20, right: 20),
+                      child: Text(
+                        "permintaan tidak dapat di temukan ",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 50,
+                    ),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'error pada request clien',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    )
+                  ],
+                  if (error!.response!.statusCode >= 500) ...[
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20, right: 20),
+                      child: Text(
+                        "kesalaha terjadi pada server tidak dapat menerima reques untuk sekarang ",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 50,
+                    ),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'error pada server ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    )
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -46,7 +113,7 @@ class OnHttpError extends StatelessWidget {
             ),
           );
         },
-        child: const Icon(Icons.arrow_back_ios_new_sharp),
+        child: const Icon(Icons.home_outlined),
       ),
     );
   }

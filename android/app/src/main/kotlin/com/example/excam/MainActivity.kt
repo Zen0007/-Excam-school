@@ -41,9 +41,9 @@ class MainActivity : FlutterActivity() {
         // Now it's safe to call isAdmin()
         val isAdmin = isAdmin()
         if (!isAdmin) {
-           requestAdminPermission()
+            requestAdminPermission()
         } else {
-            yesIsAdmin()
+           yesIsAdmin()
         }
     }
 

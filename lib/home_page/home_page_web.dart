@@ -1,4 +1,8 @@
 import 'dart:async';
+import 'package:excam/navigation_delegate/main_template.dart';
+import 'package:excam/navigation_delegate/on_http_error.dart';
+//import 'package:excam/navigation_delegate/on_progress.dart';
+import 'package:excam/navigation_delegate/on_web_resource_error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -38,72 +42,24 @@ class _HomePageWebState extends State<HomePageWeb> {
           NavigationDelegate(
             onHttpError: (error) {
               debugPrint('on http Error ');
-              showAdaptiveDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog.adaptive(
-                    title: const Text("on http error"),
-                    content: Text(
-                        "respon status code ${error.response!.statusCode}"),
-                    actions: [
-                      FloatingActionButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("yes"),
-                      ),
-                    ],
-                  );
-                },
+
+              runApp(
+                MainTemplate(
+                  templateWigate: OnHttpError(audio: audio, error: error),
+                ),
               );
             },
             onWebResourceError: (error) {
               debugPrint('on web resourece error ');
-              showAdaptiveDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog.adaptive(
-                    title: const Text("error on web resource"),
-                    content: Text("${error.description} "),
-                    actions: [
-                      FloatingActionButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("yes"),
-                      ),
-                    ],
-                  );
-                },
+
+              runApp(
+                MainTemplate(
+                  templateWigate: OnWebResourceError(
+                    audio: audio,
+                    error: error,
+                  ),
+                ),
               );
-            },
-            onProgress: (progress) {
-              showAdaptiveDialog(
-                context: context,
-                builder: (context) {
-                  Future.delayed(
-                    const Duration(seconds: 10),
-                    () {
-                      if (!context.mounted) {
-                        return;
-                      }
-                      Navigator.of(context).pop();
-                    },
-                  );
-                  return AlertDialog.adaptive(
-                    title: const Text("Progress"),
-                    content: Row(
-                      children: [
-                        Text(
-                          "this process $progress",
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                        const SizedBox(
-                          width: 50,
-                        ),
-                        const CircularProgressIndicator.adaptive(),
-                      ],
-                    ),
-                  );
-                },
-              );
-              debugPrint('on progress');
             },
           ),
         )
@@ -145,10 +101,9 @@ class _HomePageWebState extends State<HomePageWeb> {
             isValidate = false;
           },
         );
-        Timer(
-          const Duration(seconds: 10),
-          () => start(context),
-        );
+        if (!isValidate) {
+          start(context);
+        }
       }
     } catch (e, s) {
       debugPrint("$e");
@@ -206,28 +161,15 @@ class _HomePageWebState extends State<HomePageWeb> {
       await platform.invokeMethod('startKioskMode');
       debugPrint("Kiosk Mode started");
 
-      showDialog(
-        // ignore: use_build_context_synchronously
-        context: context,
-        builder: (BuildContext context) {
-          Future.delayed(
-            const Duration(seconds: 10),
-            () {
-              if (!context.mounted) {
-                return;
-              }
-              Navigator.of(context).pop();
-            },
-          );
-          return const AlertDialog(
-            title: Text('this kiosk mode is active'),
-          );
-        },
-      );
-
       if (!context.mounted) {
         return;
       }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('mode kiosk mode is active'),
+        ),
+      );
     } on PlatformException catch (e) {
       debugPrint("Error starting kiosk mode: ${e.message}");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -244,40 +186,39 @@ class _HomePageWebState extends State<HomePageWeb> {
         backgroundColor: Colors.blue,
         title: const Text("EXCAM APP"),
         actions: [
-          if (!isValidate)
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    audio();
-                    showAdaptiveDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog.adaptive(
-                          content: const Text("you want to leave"),
-                          actions: [
-                            ElevatedButton(
-                              onPressed: () {
-                                end(context);
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text("yes"),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text("cancel"),
-                            )
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: const Text("EXIT"),
-                ),
-              ],
-            ),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  audio();
+                  showAdaptiveDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog.adaptive(
+                        content: const Text("you want to leave"),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              end(context);
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("yes"),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("cancel"),
+                          )
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text("EXIT"),
+              ),
+            ],
+          ),
         ],
       ),
       body: Container(
@@ -285,77 +226,74 @@ class _HomePageWebState extends State<HomePageWeb> {
         child: Stack(
           children: [
             if (isValidate) ...[
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              focusColor: Colors.white,
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                    color: Colors.white, width: 2.0),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              border: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                    color: Colors.white, width: 2.0),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                    color: Colors.white, width: 2.0),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              hintText: 'web url',
-                              hintStyle: const TextStyle(color: Colors.grey),
-                            ),
-                            keyboardType: TextInputType.url,
-                            controller: _nameController,
-                            validator: (value) {
-                              if (!value!.contains(RegExp(reg))) {
-                                return 'masukan url yang benar';
-                              }
-                              if (value.isEmpty) {
-                                return 'input tidak boleh kosong';
-                              }
-                              return null;
-                            },
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10, top: 200),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: <Widget>[
+                      TextFormField(
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          focusColor: Colors.white,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                color: Colors.white, width: 2.0),
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: 20,
-                              left: 10,
-                              right: 10,
-                            ),
-                            child: ElevatedButton(
-                              onPressed: () => _sumbit(context),
-                              child: const Text("NEXT"),
-                            ),
-                          )
-                        ],
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                color: Colors.white, width: 2.0),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                color: Colors.white, width: 2.0),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          hintText: 'web url',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                        ),
+                        keyboardType: TextInputType.url,
+                        controller: _nameController,
+                        validator: (value) {
+                          if (!value!.contains(RegExp(reg))) {
+                            return 'masukan url yang benar';
+                          }
+                          if (value.isEmpty) {
+                            return 'input tidak boleh kosong';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 20,
+                          left: 10,
+                          right: 10,
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () => _sumbit(context),
+                          child: const Text("NEXT"),
+                        ),
+                      )
+                    ],
                   ),
-                ],
+                ),
               ),
             ] else
               SingleChildScrollView(
-                child: Column(children: [
-                  Container(
-                    width: size.width,
-                    height: size.height,
-                    color: Colors.blue[600],
-                    child: WebViewWidget(controller: webViewController),
-                  )
-                ]),
+                child: Column(
+                  children: [
+                    Container(
+                      width: size.width,
+                      height: size.height,
+                      color: Colors.blue[600],
+                      child: WebViewWidget(controller: webViewController),
+                    )
+                  ],
+                ),
               ),
             Positioned(
               bottom: 0,
@@ -371,7 +309,13 @@ class _HomePageWebState extends State<HomePageWeb> {
                     SizedBox(
                       width: 20,
                     ),
-                    Text("data"),
+                    Text(
+                      "Zen0007",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),

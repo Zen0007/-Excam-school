@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:volume_controller/volume_controller.dart';
-import 'package:w';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomePageWeb extends StatefulWidget {
   const HomePageWeb({super.key});

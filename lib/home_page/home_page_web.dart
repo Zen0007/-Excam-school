@@ -195,20 +195,30 @@ class _HomePageWebState extends State<HomePageWeb> {
                     context: context,
                     builder: (context) {
                       return AlertDialog.adaptive(
-                        content: const Text("you want to leave"),
+                        content: const Text(
+                          "you want to leave",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
                         actions: [
                           ElevatedButton(
                             onPressed: () {
                               end(context);
                               Navigator.of(context).pop();
                             },
-                            child: const Text("yes"),
+                            child: const Text(
+                              "Yes",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                           ElevatedButton(
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: const Text("cancel"),
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           )
                         ],
                       );

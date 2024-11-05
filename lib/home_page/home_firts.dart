@@ -1,7 +1,4 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeFirts extends StatefulWidget {
   const HomeFirts({super.key});
@@ -11,97 +8,84 @@ class HomeFirts extends StatefulWidget {
 }
 
 class _HomeFirtsState extends State<HomeFirts> {
-  static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
-  late WebViewController webViewController;
+  final PageController _pageController = PageController();
+  bool _isSwipeEnabled = false;
 
-  @override
-  void initState() {
-    super.initState();
+  void _toggleSwipe() {
+    setState(() {
+      _isSwipeEnabled = !_isSwipeEnabled;
+    });
   }
 
-  void webView() {
-    webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.amber)
-      ..loadRequest(
-        Uri.parse(''),
-      );
-  }
-
-  void start(BuildContext context) async {
-    try {
-      await platform.invokeMethod('startKioskMode');
-      debugPrint("Kiosk Mode started");
-
-      showDialog(
-        // ignore: use_build_context_synchronously
-        context: context,
-        builder: (BuildContext context) {
-          return const AlertDialog(
-            title: Text('this kiosk mode is active'),
-          );
-        },
-      );
-
-      Timer(
-        const Duration(seconds: 30),
-        () {
-          Navigator.of(context).pop(); // Closes the dialog
-        },
-      );
-      if (!context.mounted) {
-        return;
-      }
-    } on PlatformException catch (e) {
-      debugPrint("Error starting kiosk mode: ${e.message}");
+  Future<bool> _onBackPressed() async {
+    // If swipe is not enabled, do not allow the user to exit the app
+    if (!_isSwipeEnabled) {
+      // Optionally show a message to the user
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to start kiosk mode: ${e.message}")),
+        const SnackBar(content: Text('Swipe navigation is disabled.')),
       );
+      return false; // Prevent the back navigation
     }
-  }
-
-  void end(BuildContext context) async {
-    try {
-      await platform.invokeMethod("stopKioskMode");
-      debugPrint("Kiosk Mode stopped");
-
-      if (!context.mounted) {
-        return;
-      }
-    } on PlatformException catch (e) {
-      debugPrint("Error stopping kiosk mode: ${e.message}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to stop kiosk mode: ${e.message}")),
-      );
-    }
+    return true; // Allow back navigation
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kiosk Mode Example"),
+        title: const Text('Swipe Navigation Example'),
         actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ElevatedButton(
-                onPressed: () => start(context),
-                child: const Text("START KIOSK MODE"),
-              ),
-              const SizedBox(
-                width: 50,
-              ),
-              ElevatedButton(
-                onPressed: () => end(context),
-                child: const Text("STOP KIOSK MODE"),
-              ),
-            ],
+          IconButton(
+            icon: Icon(_isSwipeEnabled ? Icons.stop : Icons.play_arrow),
+            onPressed: _toggleSwipe,
           ),
         ],
       ),
-      body: WebViewWidget(
-        controller: webViewController,
+      body: GestureDetector(
+        onVerticalDragDown: (details) {
+          if (!_isSwipeEnabled) {
+            // Prevent swipe navigation if not enabled
+            return;
+          }
+        },
+        child: PageView(
+          controller: _pageController,
+          physics: _isSwipeEnabled
+              ? const AlwaysScrollableScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
+          children: <Widget>[
+            Container(
+              color: Colors.red,
+              child: const Center(
+                  child: Text('Page 1', style: TextStyle(fontSize: 24))),
+            ),
+            Container(
+              color: Colors.green,
+              child: const Center(
+                  child: Text('Page 2', style: TextStyle(fontSize: 24))),
+            ),
+            Container(
+              color: Colors.blue,
+              child: const Center(
+                  child: Text('Page 3', style: TextStyle(fontSize: 24))),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Handle back button manually
+          bool canPop = await _onBackPressed();
+
+          if (!context.mounted) {
+            return;
+          }
+          if (canPop) {
+            // If allowed, navigate back
+            Navigator.of(context).pop();
+          }
+        },
+        child: const Icon(Icons.arrow_back),
       ),
     );
   }

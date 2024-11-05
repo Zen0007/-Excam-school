@@ -1,4 +1,4 @@
-import 'package:excam/home_page/home_page_web.dart';
+import 'package:excam/home_page/home_firts.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       color: Colors.amber[600],
-      home: const HomePageWeb(),
+      home: const HomeFirts(),
     );
   }
 }

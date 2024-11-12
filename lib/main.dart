@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      color: Colors.amber[600],
+      color: Colors.amber[200],
       home: const HomePageWeb(),
     );
   }

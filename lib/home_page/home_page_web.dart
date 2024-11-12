@@ -72,7 +72,7 @@ class _HomePageWebState extends State<HomePageWeb> {
           },
         )
         ..loadRequest(
-          Uri.parse(url),
+          Uri.parse("http://172.16.0.35"),
         );
     } catch (e, s) {
       debugPrint("$e");

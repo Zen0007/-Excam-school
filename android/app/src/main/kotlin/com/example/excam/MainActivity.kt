@@ -160,14 +160,23 @@ class MainActivity : FlutterActivity() {
     }
 
     @Suppress("DEPRECATION")
-    private fun setImmersiveMode(enable: Boolean) {
-        val flags = if (enable) {
-            (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-        } else {
-            (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        }
-        window.decorView.systemUiVisibility = flags
+   private fun setImmersiveMode(enable: Boolean) {
+    val flags = if (enable) {
+        (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+         View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+    } else {
+        (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
     }
+    window.decorView.systemUiVisibility = flags
+
+    window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+        if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+            setImmersiveMode(true) // Mengatur kembali mode immersive
+        }
+    }
+ }
 
     private fun setRestrictions(disallow: Boolean) {
         mUserManager.setUserRestriction(UserManager.DISALLOW_SAFE_BOOT, disallow)

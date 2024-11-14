@@ -61,10 +61,9 @@ class MainActivity : FlutterActivity() {
                     
                     if (isDeviceXiaomi()) {
                     // Penanganan khusus untuk perangkat Xiaomi jika diperlukan
-                    Toast.makeText(this, "Perangkat Xiaomi terdeteksi, pengaturan khusus diaktifkan", Toast.LENGTH_SHORT).show()
-            
-                       enforceLockTaskPeriodically()
-            
+                      Toast.makeText(this, "Perangkat Xiaomi terdeteksi, pengaturan khusus diaktifkan", Toast.LENGTH_SHORT).show()
+                       startLockTaskService()
+                       
                        window.setFlags(
                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -83,7 +82,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun requestAdminPermission() {
-        val builder = AlertDialog.Builder(this)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder.setTitle("Admin Permission Required")
             .setMessage("This app requires admin permissions to run in kiosk mode.")
             .setPositiveButton("Yes") { _, _ ->
@@ -106,6 +105,7 @@ class MainActivity : FlutterActivity() {
             false
         }
     }
+
 
 
     private fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
@@ -190,19 +190,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun enforceLockTaskPeriodically() {
-        val handler = Handler()
-        val runnable = object : Runnable {
-            override fun run() {
-                if (isAdmin()) {
-                    startLockTask()
-                }
-                handler.postDelayed(this, 10)
-            }
-        }
-        handler.post(runnable)
-    }
-
+   
     override fun onResume() {
         super.onResume()
         setImmersiveMode(true)
@@ -235,5 +223,6 @@ class MainActivity : FlutterActivity() {
     private fun isDeviceXiaomi(): Boolean {
         return android.os.Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
     }
-}
 
+   
+}

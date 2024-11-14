@@ -24,6 +24,9 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+        <service android:name=".LockTaskService"
+            android:enabled="true"
+            android:exported="false" />
         <meta-data android:name="flutterEmbedding" android:value="2" />
     </application>
     <!-- Required to query activities that can process text, see:

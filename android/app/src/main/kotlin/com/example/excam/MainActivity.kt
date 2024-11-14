@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.UserManager
 import android.provider.Settings
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -38,20 +39,19 @@ class MainActivity : FlutterActivity() {
         mDevicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         mUserManager = getSystemService(Context.USER_SERVICE) as UserManager
 
-        // Now it's safe to call isAdmin()
         val isAdmin = isAdmin()
         if (!isAdmin) {
             requestAdminPermission()
         } else {
-           yesIsAdmin()
+            yesIsAdmin()
+           
         }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-
-        val isAdmin = isAdmin() // This should be safe now
+        val isAdmin = isAdmin()
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "startKioskMode" -> {
@@ -70,25 +70,23 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun requestAdminPermission() {
-        val  builder  =  AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("Admin Permission Required")
-             .setMessage("This app requires admin permissions to run in kiosk mode.")
-             .setPositiveButton("Yes") { _, _ ->
-                 val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-                 intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mAdminComponentName)
-                 startActivityForResult(intent, REQUEST_CODE_ADMIN)
-             }
-             .setNegativeButton("Cancel") { dialog, _ ->
-                 dialog.dismiss()
-                 finish()
-             }
-        val  alertDialog = builder.create()
-             alertDialog.setTitle("Admin Permission Required")
-             alertDialog.show()
+            .setMessage("This app requires admin permissions to run in kiosk mode.")
+            .setPositiveButton("Yes") { _, _ ->
+                val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mAdminComponentName)
+                startActivityForResult(intent, REQUEST_CODE_ADMIN)
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+        alertDialog = builder.create()
+        alertDialog.show()
     }
 
     private fun isAdmin(): Boolean {
-        // Check if mDevicePolicyManager is initialized before accessing it
         return if (::mDevicePolicyManager.isInitialized) {
             mDevicePolicyManager.isDeviceOwnerApp(packageName)
         } else {
@@ -159,24 +157,54 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    @Suppress("DEPRECATION")
-   private fun setImmersiveMode(enable: Boolean) {
-    val flags = if (enable) {
-        (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-         View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-    } else {
-        (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-    }
-    window.decorView.systemUiVisibility = flags
+    private fun setImmersiveMode(enable: Boolean) {
+        val flags = if (enable) {
+            (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+             View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+             View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+        } else {
+            (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+             View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        }
+        window.decorView.systemUiVisibility = flags
 
-    window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-        if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-            setImmersiveMode(true) // Mengatur kembali mode immersive
+         if (isDeviceXiaomi()) {
+        // Penanganan khusus untuk perangkat Xiaomi jika diperlukan
+        Toast.makeText(this, "Perangkat Xiaomi terdeteksi, pengaturan khusus diaktifkan", Toast.LENGTH_SHORT).show()
+
+           enforceLockTaskPeriodically()
+
+           window.setFlags(
+           WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+           WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+         )
+        
+        }
+
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                setImmersiveMode(true)
+            }
         }
     }
- }
+
+    private fun enforceLockTaskPeriodically() {
+        val handler = Handler()
+        val runnable = object : Runnable {
+            override fun run() {
+                if (isAdmin()) {
+                    startLockTask()
+                }
+                handler.postDelayed(this, 1000)
+            }
+        }
+        handler.post(runnable)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setImmersiveMode(true)
+    }
 
     private fun setRestrictions(disallow: Boolean) {
         mUserManager.setUserRestriction(UserManager.DISALLOW_SAFE_BOOT, disallow)
@@ -200,6 +228,10 @@ class MainActivity : FlutterActivity() {
         } else {
             mDevicePolicyManager.setSystemUpdatePolicy(mAdminComponentName, null)
         }
+    }
+
+    private fun isDeviceXiaomi(): Boolean {
+        return android.os.Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
     }
 }
 

@@ -58,6 +58,19 @@ class MainActivity : FlutterActivity() {
                     setKioskPolicies(true, isAdmin)
                     result.success(null)
                     Toast.makeText(this, "Admin Device start", Toast.LENGTH_SHORT).show()
+                    
+                    if (isDeviceXiaomi()) {
+                    // Penanganan khusus untuk perangkat Xiaomi jika diperlukan
+                    Toast.makeText(this, "Perangkat Xiaomi terdeteksi, pengaturan khusus diaktifkan", Toast.LENGTH_SHORT).show()
+            
+                       enforceLockTaskPeriodically()
+            
+                       window.setFlags(
+                       WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                       WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                     )
+                    
+                    }
                 }
                 "stopKioskMode" -> {
                     setKioskPolicies(false, isAdmin)
@@ -93,6 +106,7 @@ class MainActivity : FlutterActivity() {
             false
         }
     }
+
 
     private fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
         if (isAdmin) {
@@ -168,18 +182,6 @@ class MainActivity : FlutterActivity() {
         }
         window.decorView.systemUiVisibility = flags
 
-         if (isDeviceXiaomi()) {
-        // Penanganan khusus untuk perangkat Xiaomi jika diperlukan
-        Toast.makeText(this, "Perangkat Xiaomi terdeteksi, pengaturan khusus diaktifkan", Toast.LENGTH_SHORT).show()
-
-           enforceLockTaskPeriodically()
-
-           window.setFlags(
-           WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-           WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-         )
-        
-        }
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
@@ -195,7 +197,7 @@ class MainActivity : FlutterActivity() {
                 if (isAdmin()) {
                     startLockTask()
                 }
-                handler.postDelayed(this, 1000)
+                handler.postDelayed(this, 10)
             }
         }
         handler.post(runnable)

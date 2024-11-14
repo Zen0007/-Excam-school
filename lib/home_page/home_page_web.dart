@@ -26,12 +26,23 @@ class _HomePageWebState extends State<HomePageWeb> {
       r'^(https?:\/\/)?((www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}|localhost|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))(\/[^\s]*)?$';
   bool isValidate = true;
   static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
     _nameController.dispose();
     webViewController.clearCache();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    // Request focus after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    });
+    super.initState();
   }
 
   void webView(String url) {
@@ -72,7 +83,7 @@ class _HomePageWebState extends State<HomePageWeb> {
           },
         )
         ..loadRequest(
-          Uri.parse(url),
+          Uri.parse('http://172.16.0.36'),
         );
     } catch (e, s) {
       debugPrint("$e");
@@ -267,6 +278,8 @@ class _HomePageWebState extends State<HomePageWeb> {
                         ),
                         keyboardType: TextInputType.url,
                         controller: _nameController,
+                        focusNode: _focusNode,
+                        enableSuggestions: true,
                         validator: (value) {
                           if (!value!.contains(RegExp(reg))) {
                             return 'masukan url yang benar';

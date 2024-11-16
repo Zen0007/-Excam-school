@@ -7,6 +7,8 @@ import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
+
 
 class LockTaskService : Service() {
 
@@ -54,6 +56,16 @@ class LockTaskService : Service() {
     private fun bringAppToForeground() {
         val intent = packageManager.getLaunchIntentForPackage(packageName)
         intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        startActivity(intent)
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Handle any exceptions or show logs if needed
+            Log.e("LockTaskService", "Failed to bring app to foreground: ${e.message}")
+        }
+    }
+
+    // Stop the service when requested
+    fun stopService() {
+        stopSelf()
     }
 }

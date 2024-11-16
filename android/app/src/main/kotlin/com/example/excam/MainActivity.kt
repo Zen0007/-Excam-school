@@ -40,7 +40,7 @@ class MainActivity : FlutterActivity() {
         mUserManager = getSystemService(Context.USER_SERVICE) as UserManager
 
         val isAdmin = isAdmin()
-        if (!isAdmin) {
+        if (! isAdmin) {
             requestAdminPermission()
         } else {
             yesIsAdmin()
@@ -62,7 +62,7 @@ class MainActivity : FlutterActivity() {
                     if (isDeviceXiaomi()) {
                     // Penanganan khusus untuk perangkat Xiaomi jika diperlukan
                       Toast.makeText(this, "Perangkat Xiaomi terdeteksi, pengaturan khusus diaktifkan", Toast.LENGTH_SHORT).show()
-                       startLockTaskService()
+                      startLockTaskService()
                        
                        window.setFlags(
                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
@@ -74,6 +74,7 @@ class MainActivity : FlutterActivity() {
                 "stopKioskMode" -> {
                     setKioskPolicies(false, isAdmin)
                     result.success(null)
+                    stopLockTaskService()
                     Toast.makeText(this, "Admin Device stop", Toast.LENGTH_SHORT).show()
                 }
                 else -> result.notImplemented()
@@ -81,7 +82,22 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+     // Function to start the LockTaskService
+     private fun startLockTaskService() {
+        val lockTaskServiceIntent = Intent(this, LockTaskService::class.java)
+        startService(lockTaskServiceIntent)
+    }
+
+    // Function to stop the LockTaskService
+    private fun stopLockTaskService() {
+        val lockTaskServiceIntent = Intent(this, LockTaskService::class.java)
+        stopService(lockTaskServiceIntent)
+    }
+
+
     private fun requestAdminPermission() {
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder.setTitle("Admin Permission Required")
             .setMessage("This app requires admin permissions to run in kiosk mode.")

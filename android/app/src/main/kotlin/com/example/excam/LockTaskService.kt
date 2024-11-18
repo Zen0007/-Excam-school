@@ -1,71 +1,74 @@
 package com.example.excam
 
-import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Handler
+import android.graphics.PixelFormat
+import android.os.Build
 import android.os.IBinder
-import android.os.Looper
-import android.util.Log
-
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.TextView
 
 class LockTaskService : Service() {
 
-    private val handler = Handler(Looper.getMainLooper())
-    private val checkInterval = 1000L // Interval pengecekan setiap 1 detik
-
-    private val runnable = object : Runnable {
-        override fun run() {
-            if (!isAppInForeground()) {
-                // Bawa aplikasi kembali ke latar depan jika keluar dari foreground
-                bringAppToForeground()
-            }
-            handler.postDelayed(this, checkInterval)
-        }
-    }
+    private var windowManager: WindowManager? = null
+    private var overlayView: View? = null
 
     override fun onCreate() {
         super.onCreate()
-        handler.post(runnable) // Mulai pengecekan ketika layanan dimulai
+
+        // WindowManager untuk menambahkan View
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+
+        // Inflate layout untuk overlay
+        overlayView = LayoutInflater.from(this).inflate(R.layout.overlay_layout, null)
+
+        // Set layout parameters untuk overlay
+        val layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+        layoutParams.gravity = Gravity.CENTER
+
+        // Tambahkan view ke WindowManager
+        windowManager?.addView(overlayView, layoutParams)
+
+        // Tambahkan aksi ke elemen UI
+        val closeButton: Button = overlayView!!.findViewById(R.id.close_button)
+        closeButton.setOnClickListener {
+            stopSelf() // Tutup service
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(runnable) // Hentikan pengecekan jika layanan dihentikan
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
-
-    // Fungsi untuk memeriksa apakah aplikasi berada di latar depan
-    private fun isAppInForeground(): Boolean {
-        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val appProcesses = activityManager.runningAppProcesses ?: return false
-        val packageName = packageName
-        for (appProcess in appProcesses) {
-            if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
-                appProcess.processName == packageName
-            ) {
-                return true
-            }
-        }
-        return false
-    }
-
-    // Fungsi untuk membawa aplikasi kembali ke latar depan
-    private fun bringAppToForeground() {
-        val intent = packageManager.getLaunchIntentForPackage(packageName)
-        intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        try {
-            startActivity(intent)
-        } catch (e: Exception) {
-            // Handle any exceptions or show logs if needed
-            Log.e("LockTaskService", "Failed to bring app to foreground: ${e.message}")
+        // Hapus view saat service berhenti
+        if (overlayView != null) {
+            windowManager?.removeView(overlayView)
+            overlayView = null
         }
     }
 
-    // Stop the service when requested
-    fun stopService() {
-        stopSelf()
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+
+        // Tampilkan overlay ketika aplikasi di-close
+        val intent = Intent(this,LockTaskService::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startService(intent)
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 }

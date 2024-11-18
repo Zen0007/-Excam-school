@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:text="Ini adalah overlay"
         android:textColor="@android:color/white"
-        android:textSize="18sp"
         android:textSize="16sp" />
 
     <Button

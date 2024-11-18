@@ -31,10 +31,13 @@ class MainActivity : FlutterActivity() {
                 showOverlayPermissionDialog(this.context)
             }else{
                 startOverlayService()
+                Toast.makeText(this, "App overlay 1", Toast.LENGTH_SHORT).show()
             }
         }else{
             startOverlayService()
+            Toast.makeText(this, "App is overlay 2", Toast.LENGTH_SHORT).show()
         }
+      
     }
     
 
@@ -97,17 +100,37 @@ class MainActivity : FlutterActivity() {
     override fun onStop(){
         super.onStop()
         Toast.makeText(this, "Exiting the app", Toast.LENGTH_SHORT).show()
-        val intent = Intent(this,LockTaskService::class.java)
-        startService(intent)
+        startOverlayService()
     }
 
     override fun onBackPressed() {
         // Show toast when back button is pressed
         Toast.makeText(this, "Exiting the app", Toast.LENGTH_SHORT).show()
         super.onBackPressed() // Call the super method to actually close the app
-        val intent = Intent(this,LockTaskService::class.java)
-        startService(intent)
+        startOverlayService()
     }
+
+    override fun onPause() {
+        super.onPause()
+        // Show a toast when the app goes to the background or is paused
+        Toast.makeText(this, "App is in the background", Toast.LENGTH_SHORT).show()
+        startOverlayService()
+    }
+     
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!hasFocus) {
+            // Mencegah aplikasi masuk ke background
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.addCategory(Intent.CATEGORY_HOME)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+            startOverlayService()
+            Toast.makeText(this, "App is hasfocus", Toast.LENGTH_SHORT).show()
+        }
+        Toast.makeText(this, "App is not focus", Toast.LENGTH_SHORT).show()
+    }
+  
 }
 
 

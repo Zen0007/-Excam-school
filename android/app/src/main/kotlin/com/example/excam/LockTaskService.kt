@@ -20,7 +20,6 @@ class LockTaskService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-
         // WindowManager untuk menambahkan View
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
@@ -38,8 +37,7 @@ class LockTaskService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        layoutParams.gravity = Gravity.CENTER
-
+        layoutParams.gravity = Gravity.BOTTOM 
         // Tambahkan view ke WindowManager
         windowManager?.addView(overlayView, layoutParams)
 

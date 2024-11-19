@@ -29,13 +29,7 @@ class MainActivity : FlutterActivity() {
             if (!Settings.canDrawOverlays(this)) {
                 Log.d("MainActivity", "Requesting overlay permission")
                 showOverlayPermissionDialog(this.context)
-            }else{
-                startOverlayService()
-                Toast.makeText(this, "App overlay 1", Toast.LENGTH_SHORT).show()
             }
-        }else{
-            startOverlayService()
-            Toast.makeText(this, "App is overlay 2", Toast.LENGTH_SHORT).show()
         }
       
     }
@@ -48,9 +42,6 @@ class MainActivity : FlutterActivity() {
                 if (!Settings.canDrawOverlays(this)) {
                     // If permission is not granted, close the app
                     finish()
-                } else {
-                    // If permission is granted, continue with the app
-                    startOverlayService()
                 }
             }
         }

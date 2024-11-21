@@ -52,11 +52,29 @@ class LockTaskService : Service() {
           // Add the overlay view to the window
           val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
           windowManager.addView(overlayView, layoutParams)      
+
+          // Simpan nama aktivitas saat ini
+          val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+          val editor = prefs.edit()
+          editor.putString("last_activity", MainActivity::class.java.name)
+          editor.apply()
   
           // Tambahkan aksi ke elemen UI
           val closeButton: Button = overlayView!!.findViewById(R.id.closeButton)
           closeButton.setOnClickListener {
-              stopSelf() // Tutup service
+              // Ambil nama aktivitas terakhir dari SharedPreferences
+            val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+            val lastActivity = prefs.getString("last_activity", null)
+
+            // Jika ada aktivitas terakhir, mulai aktivitas tersebut
+            if (lastActivity != null) {
+                val intent = Intent()
+                intent.setClassName(this, lastActivity)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Tambahkan flag untuk memulai aktivitas dari service
+                startActivity(intent)
+            }
+
+            stopSelf() // Tutup service
           }
     }
 
@@ -67,6 +85,11 @@ class LockTaskService : Service() {
             windowManager?.removeView(overlayView)
             overlayView = null
         }
+
+        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        prefs.edit().apply {
+            remove("last_activity")
+        }.apply()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {

@@ -13,12 +13,16 @@ import io.flutter.embedding.android.FlutterActivity
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import android.widget.Button
+import android.widget.TextView
 
 class MainActivity : FlutterActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var showDialogRunnable: Runnable
     private var isDialogShowing = false // Track if the dialog is currently showing
+    private val REQUEST_CODE = 1
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +32,7 @@ class MainActivity : FlutterActivity() {
          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
                 Log.d("MainActivity", "Requesting overlay permission")
+                // Delay showing the dialog to ensure the activity is fully created
                 showOverlayPermissionDialog(this.context)
             }
         }
@@ -37,24 +42,31 @@ class MainActivity : FlutterActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1234) {
+        if (requestCode == REQUEST_CODE) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(this)) {
-                    // If permission is not granted, close the app
-                    finish()
+                if (!checkDrawOverlayPermission()) {
+                    Toast.makeText(this, "Izin tidak diberikan. Silakan aktifkan izin overlay.", Toast.LENGTH_SHORT).show()
+
+                    AlertDialog.Builder(this)
+                    .setTitle("Izin Overlay Diperlukan")
+                    .setMessage("Aplikasi ini memerlukan izin untuk menampilkan overlay. Silakan aktifkan di pengaturan.")
+                    .setPositiveButton("Buka Pengaturan") { _, _ ->
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:$packageName"))
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("Batal", null)
+                    .show()
                 }
             }
         }
     }
-    
-    
-    private fun requestOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
-            )
-            startActivityForResult(intent, 1234)
+
+    private fun checkDrawOverlayPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(this)
+        } else {
+            true // Untuk versi di bawah Marshmallow
         }
     }
     
@@ -67,26 +79,37 @@ class MainActivity : FlutterActivity() {
     private fun showOverlayPermissionDialog(context: Context) {
         Log.d("MainActivity", "Attempting to show overlay permission dialog")
     
-        runOnUiThread {
-            // Show dialog to request permission
-            AlertDialog.Builder(context)
-                .setTitle("Permission Needed")
-                .setMessage("The app needs permission to display pop-ups over other apps. Please enable the permission.")
-                .setPositiveButton("OK") { _, _ ->
-                    Log.d("MainActivity", "User agreed to request permission")
-                    requestOverlayPermission()
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.dismiss()
-                    // Close the app if permission is not granted
-                    Log.d("MainActivity", "User denied the permission request")
-                    finish()
-                }
-                .setCancelable(false) // Dialog cannot be dismissed without an action
-                .show()
-            Log.d("MainActivity", "Overlay permission dialog should be visible now")
+        // Inflate the custom layout
+        val dialogView = layoutInflater.inflate(R.layout.dialog_overlay_permission, null)
+    
+        // Create the dialog
+        val dialog = AlertDialog.Builder(context)
+            .setView(dialogView)
+            .setCancelable(false) // Dialog tidak bisa ditutup tanpa aksi
+            .create()
+        
+        dialogView.findViewById<Button>(R.id.button_ok).setOnClickListener {
+            if (!checkDrawOverlayPermission()) {
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName"))
+                startActivityForResult(intent, REQUEST_CODE)
+                dialog.dismiss()
+            }else{
+                dialog.dismiss()
+            }
         }
+    
+        dialogView.findViewById<Button>(R.id.button_cancel).setOnClickListener {
+            Toast.makeText(this, "Izin tidak diberikan. Silakan aktifkan izin overlay.", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+            finish() // Close the app if permission is not granted
+        }
+    
+        // Show the dialog
+        dialog.show()
+        Log.d("MainActivity", "Overlay permission dialog should be visible now")
     }
+
 
     override fun onStop(){
         super.onStop()

@@ -12,6 +12,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import android.util.DisplayMetrics
 
 
 class LockTaskService : Service() {
@@ -22,41 +23,34 @@ class LockTaskService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // WindowManager untuk menambahkan View
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-
-                // Dapatkan ukuran layar
-        // Metode 1: Menggunakan Context
-        val displayMetrics = contextView.resources.displayMetrics
+        
+          // Dapatkan ukuran layar
+        val displayMetrics = DisplayMetrics()
+        val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
-        
+
         // Inflate layout for overlay
         overlayView = LayoutInflater.from(this).inflate(R.layout.overlay_layout, null)
-        
-        // Get the height of the navigation bar
-        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-        val navigationBarHeight = if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 0
-        
+
         // Set layout parameters for overlay
         val layoutParams = WindowManager.LayoutParams(
             screenWidth, // Full width of the screen
-            (screenHeight / 2) + navigationBarHeight, // 50% height of the screen + navigation bar height
+            (screenHeight * 0.50).toInt(), // Half height of the screen
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             else
-                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or 
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         )
-        
+
         // Set position of the overlay
         layoutParams.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-        
+
         // Add the overlay view to the window
-        val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        windowManager.addView(overlayView, layoutParams)        
+        windowManager.addView(overlayView, layoutParams)
 
         // Tambahkan aksi ke elemen UI
         val closeButton: Button = overlayView!!.findViewById(R.id.closeButton)

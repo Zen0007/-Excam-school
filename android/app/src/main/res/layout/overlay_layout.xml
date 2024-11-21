@@ -4,8 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@drawable/curve"
+    android:id="@+id/constraintLayout"
     android:elevation="4dp"
     tools:context=".LockTaskService">
 
@@ -23,9 +24,10 @@
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
-       <TextView
+    <TextView
         android:id="@+id/textView2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -40,7 +42,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-  
     <TextView
         android:id="@+id/textView3"
         android:layout_width="0dp"
@@ -53,6 +54,7 @@
         app:layout_constraintTop_toBottomOf="@id/textView2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
     <Button
         android:id="@+id/closeButton"
         android:layout_width="0dp" 

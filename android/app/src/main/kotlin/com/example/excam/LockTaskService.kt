@@ -36,7 +36,8 @@ class LockTaskService : Service() {
           // Set layout parameters for overlay
           val layoutParams = WindowManager.LayoutParams(
               screenWidth, // Full width of the screen
-              (screenHeight * 0.50).toInt(), // Half height of the screen
+              //(screenHeight * 0.50).toInt(),
+               screenHeight, // Half height of the screen
               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                   WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
               else

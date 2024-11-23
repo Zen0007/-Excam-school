@@ -10,6 +10,8 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.FlutterEngine
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -23,10 +25,12 @@ class MainActivity : FlutterActivity() {
     private var isDialogShowing = false // Track if the dialog is currently showing
     private val REQUEST_CODE = 1
 
+    companion object {
+        const val CHANNEL = "kiosk_mode_channel"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("MainActivity", "onCreate called")
 
           // Check SYSTEM_ALERT_WINDOW permission
          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -39,6 +43,21 @@ class MainActivity : FlutterActivity() {
       
     }
     
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startKioskMode" -> {
+                    isDialogShowing = true 
+                }
+                "stopKioskMode" -> {
+                    isDialogShowing = false 
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -107,44 +126,154 @@ class MainActivity : FlutterActivity() {
     
         // Show the dialog
         dialog.show()
-        Log.d("MainActivity", "Overlay permission dialog should be visible now")
     }
 
-
-    override fun onStop(){
+    override fun onStop() {
         super.onStop()
         Toast.makeText(this, "Exiting the app", Toast.LENGTH_SHORT).show()
-        startOverlayService()
+    
+        // Simpan aktivitas terakhir saat aplikasi berhenti
+        saveLastActivity()
+    
+        // Jika dialog masih menunjukkan, mulai service overlay
+        if (isDialogShowing) {
+            startOverlayService()
+        }
     }
-
+    
     override fun onBackPressed() {
-        // Show toast when back button is pressed
-        Toast.makeText(this, "Exiting the app", Toast.LENGTH_SHORT).show()
-        super.onBackPressed() // Call the super method to actually close the app
-        startOverlayService()
+        // Simpan aktivitas terakhir
+        saveLastActivity()
+    
+        // Tampilkan toast saat tombol kembali ditekan
+        Toast.makeText(this, "Back to menu the app", Toast.LENGTH_SHORT).show()
+    
+        // Jika dialog masih menunjukkan, mulai service overlay
+        if (isDialogShowing) {
+            startOverlayService()
+        }
+    
+        // Ambil nama aktivitas terakhir dari SharedPreferences
+        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val lastActivity = prefs.getString("last_activity", null)
+    
+        // Jika ada aktivitas terakhir, mulai aktivitas tersebut
+        if (lastActivity != null) {
+            try {
+                // Gunakan Class.forName untuk mendapatkan kelas aktivitas
+                val activityClass = Class.forName(lastActivity)
+                
+                // Buat intent dengan cara yang lebih aman
+                val intent = Intent(this, activityClass)
+                
+                // Tambahkan flag untuk menghindari restart
+                intent.addFlags(
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or 
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or 
+                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                )
+                
+                // Mulai aktivitas
+                startActivity(intent)
+                
+                // Pastikan aktivitas saat ini ditutup
+                finish()
+            } catch (e: ClassNotFoundException) {
+                // Tangani kesalahan jika kelas aktivitas tidak ditemukan
+                Log.e("BackPressed", "Aktivitas tidak ditemukan: $lastActivity", e)
+                super.onBackPressed()
+            }
+        } else {
+            // Jika tidak ada aktivitas terakhir, gunakan perilaku default
+            super.onBackPressed()
+        }
     }
-
+    
     override fun onPause() {
         super.onPause()
-        // Show a toast when the app goes to the background or is paused
+        saveLastActivity()  // Simpan aktivitas terakhir saat aplikasi dipause
+    
+        // Tampilkan toast saat aplikasi berada di background
         Toast.makeText(this, "App is in the background", Toast.LENGTH_SHORT).show()
-        startOverlayService()
+    
+        // Jika dialog masih menunjukkan, mulai service overlay
+        if (isDialogShowing) {
+            startOverlayService()
+        }
     }
-     
+    
+    // Fungsi untuk menyimpan aktivitas terakhir ke SharedPreferences
+    private fun saveLastActivity() {
+        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putString("last_activity", MainActivity::class.java.name)
+        editor.apply()
+    }
+    
+    // Menangani status saat jendela fokus berubah
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+    
         if (!hasFocus) {
-            // Mencegah aplikasi masuk ke background
+            // Simpan aktivitas terakhir saat kehilangan fokus
+            saveLastActivity()
+    
+            // Mencegah aplikasi masuk ke background dengan memindahkan task ke home screen
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_HOME)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
-            startOverlayService()
-            Toast.makeText(this, "App is hasfocus", Toast.LENGTH_SHORT).show()
+    
+            // Jika dialog masih menunjukkan, mulai service overlay
+            if (isDialogShowing) {
+                startOverlayService()
+            }
+    
+            Toast.makeText(this, "App is not focused", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "App is focused", Toast.LENGTH_SHORT).show()
         }
-        Toast.makeText(this, "App is not focus", Toast.LENGTH_SHORT).show()
     }
-  
+    
+    // Menyimpan data aktivitas saat keadaan instance disimpan
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+    
+        // Simpan nama aktivitas terakhir yang relevan
+        outState.putString("last_activity", MainActivity::class.java.name)
+    }
+    
+    // Mengambil data aktivitas yang disimpan saat instance dipulihkan
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+    
+        // Mengambil nama aktivitas terakhir dari savedInstanceState
+        val lastActivity = savedInstanceState.getString("last_activity")
+        if (lastActivity != null) {
+            // Jika ada nama aktivitas yang disimpan, jalankan aktivitas tersebut
+            val intent = Intent()
+            intent.setClassName(this, lastActivity)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
+    }
+    
+    // Mengambil aktivitas terakhir saat aplikasi kembali dari latar belakang (di onResume)
+    override fun onResume() {
+        super.onResume()
+    
+        // Mengambil nama aktivitas terakhir dari SharedPreferences
+        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val lastActivity = prefs.getString("last_activity", null)
+    
+        if (lastActivity != null && lastActivity != MainActivity::class.java.name) {
+            val intent = Intent()
+            intent.setClassName(this, lastActivity)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
+    }
+    
 }
 
 

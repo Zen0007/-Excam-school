@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TestMode extends StatefulWidget {
   const TestMode({super.key});
@@ -8,11 +9,15 @@ class TestMode extends StatefulWidget {
 }
 
 class _TestModeState extends State<TestMode> {
-  // static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
+  static const MethodChannel platform = MethodChannel("kiosk_mode_channel");
+  int increment = 0;
 
   void stop() async {
+    setState(() {
+      increment--;
+    });
     try {
-      // await platform.invokeMethod("stopKioskMode");
+      await platform.invokeMethod("stopKioskMode");
     } catch (e, s) {
       debugPrint("$e");
       debugPrint('$s');
@@ -20,8 +25,11 @@ class _TestModeState extends State<TestMode> {
   }
 
   void start() async {
+    setState(() {
+      increment++;
+    });
     try {
-      // await platform.invokeMethod('startKioskMode');
+      await platform.invokeMethod("startKioskMode");
     } catch (e, s) {
       debugPrint("$e");
       debugPrint('$s');
@@ -37,6 +45,10 @@ class _TestModeState extends State<TestMode> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text("$increment"),
+            const SizedBox(
+              height: 10,
+            ),
             ElevatedButton(
               onPressed: start,
               child: const Text('start'),

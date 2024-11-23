@@ -35,16 +35,16 @@ class LockTaskService : Service() {
   
           // Set layout parameters for overlay
           val layoutParams = WindowManager.LayoutParams(
-              screenWidth, // Full width of the screen
-              //(screenHeight * 0.50).toInt(),
-               screenHeight, // Half height of the screen
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                  WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-              else
-                  WindowManager.LayoutParams.TYPE_PHONE,
-              WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or 
-              WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-              PixelFormat.TRANSLUCENT
+            screenWidth, // Full width of the screen
+            //(screenHeight * 0.50).toInt(),
+             screenHeight, // Half height of the screen
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or 
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            PixelFormat.TRANSLUCENT
           )
   
           // Set position of the overlay
@@ -53,30 +53,24 @@ class LockTaskService : Service() {
           // Add the overlay view to the window
           val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
           windowManager.addView(overlayView, layoutParams)      
-
-          // Simpan nama aktivitas saat ini
-          val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-          val editor = prefs.edit()
-          editor.putString("last_activity", MainActivity::class.java.name)
-          editor.apply()
   
           // Tambahkan aksi ke elemen UI
           val closeButton: Button = overlayView!!.findViewById(R.id.closeButton)
-          closeButton.setOnClickListener {
-              // Ambil nama aktivitas terakhir dari SharedPreferences
-            val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-            val lastActivity = prefs.getString("last_activity", null)
+            closeButton.setOnClickListener {
+                    // Ambil nama aktivitas terakhir dari SharedPreferences
+                  val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                  val lastActivity = prefs.getString("last_activity", null)
 
-            // Jika ada aktivitas terakhir, mulai aktivitas tersebut
-            if (lastActivity != null) {
-                val intent = Intent()
-                intent.setClassName(this, lastActivity)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Tambahkan flag untuk memulai aktivitas dari service
-                startActivity(intent)
+                  // Jika ada aktivitas terakhir, mulai aktivitas tersebut
+                  if (lastActivity != null) {
+                      val intent = Intent()
+                      intent.setClassName(this, lastActivity)
+                      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                      startActivity(intent)
+                  }
+                
+              stopSelf() // Tutup service
             }
-
-            stopSelf() // Tutup service
-          }
     }
 
     override fun onDestroy() {
@@ -89,8 +83,9 @@ class LockTaskService : Service() {
 
         val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         prefs.edit().apply {
-            remove("last_activity")
-        }.apply()
+            remove("last_activity") // Menghapus last_activity
+            apply() // Terapkan perubahan
+        }
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {

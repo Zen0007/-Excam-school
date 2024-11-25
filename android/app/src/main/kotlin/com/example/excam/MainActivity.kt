@@ -16,7 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import android.widget.Button
-import android.widget.TextView
+import android.widget.TextView 
 
 class MainActivity : FlutterActivity() {
 
@@ -24,6 +24,8 @@ class MainActivity : FlutterActivity() {
     private lateinit var showDialogRunnable: Runnable
     private var isDialogShowing = false // Track if the dialog is currently showing
     private val REQUEST_CODE = 1
+    private var isBackPressed = false
+
 
     companion object {
         const val CHANNEL = "kiosk_mode_channel"
@@ -39,6 +41,11 @@ class MainActivity : FlutterActivity() {
                 // Delay showing the dialog to ensure the activity is fully created
                 showOverlayPermissionDialog(this.context)
             }
+        }
+
+        if (savedInstanceState != null && !isBackPressed) {
+            // Pulihkan aktivitas terakhir
+            restoreLastActivity()
         }
       
     }
@@ -131,10 +138,10 @@ class MainActivity : FlutterActivity() {
     override fun onStop() {
         super.onStop()
         Toast.makeText(this, "Exiting the app", Toast.LENGTH_SHORT).show()
-    
-        // Simpan aktivitas terakhir saat aplikasi berhenti
-        saveLastActivity()
-    
+
+        if (!isBackPressed) {
+            saveLastActivity()
+        }
         // Jika dialog masih menunjukkan, mulai service overlay
         if (isDialogShowing) {
             startOverlayService()
@@ -144,7 +151,7 @@ class MainActivity : FlutterActivity() {
     override fun onBackPressed() {
         // Simpan aktivitas terakhir
         saveLastActivity()
-    
+        isBackPressed = true
         // Tampilkan toast saat tombol kembali ditekan
         Toast.makeText(this, "Back to menu the app", Toast.LENGTH_SHORT).show()
     
@@ -154,48 +161,65 @@ class MainActivity : FlutterActivity() {
         }
     
         // Ambil nama aktivitas terakhir dari SharedPreferences
+        navigateBack()
+    }
+
+    
+    private fun restoreLastActivity() {
+        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val lastActivity = prefs.getString("last_activity", null)
+
+        if (lastActivity != null && lastActivity != javaClass.name) {
+            try {
+                val intent = Intent(this, Class.forName(lastActivity)).apply {
+                    addFlags(
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or 
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    )
+                }
+                startActivity(intent)
+                finish()
+            } catch (e: ClassNotFoundException) {
+                Log.e("RestoreActivity", "Aktivitas tidak ditemukan", e)
+            }
+        }
+    }
+
+    private fun navigateBack() {
         val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         val lastActivity = prefs.getString("last_activity", null)
     
-        // Jika ada aktivitas terakhir, mulai aktivitas tersebut
-        if (lastActivity != null) {
-            try {
-                // Gunakan Class.forName untuk mendapatkan kelas aktivitas
-                val activityClass = Class.forName(lastActivity)
-                
-                // Buat intent dengan cara yang lebih aman
-                val intent = Intent(this, activityClass)
-                
-                // Tambahkan flag untuk menghindari restart
-                intent.addFlags(
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or 
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP or 
-                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-                )
-                
-                // Mulai aktivitas
+        try {
+            if (lastActivity != null && lastActivity != javaClass.name) {
+                val intent = Intent(this, Class.forName(lastActivity)).apply {
+                    addFlags(
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or 
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP or 
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    )
+                }
                 startActivity(intent)
-                
-                // Pastikan aktivitas saat ini ditutup
-                finish()
-            } catch (e: ClassNotFoundException) {
-                // Tangani kesalahan jika kelas aktivitas tidak ditemukan
-                Log.e("BackPressed", "Aktivitas tidak ditemukan: $lastActivity", e)
-                super.onBackPressed()
+                // Hapus finish() untuk mempertahankan tumpukan aktivitas
+            } else {
+                // Kembali ke aktivitas induk atau MainActivity
+                val intent = Intent(this, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
             }
-        } else {
-            // Jika tidak ada aktivitas terakhir, gunakan perilaku default
-            super.onBackPressed()
+        } catch (e: ClassNotFoundException) {
+            // Fallback ke MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
         }
     }
-    
+
     override fun onPause() {
         super.onPause()
-        saveLastActivity()  // Simpan aktivitas terakhir saat aplikasi dipause
-    
-        // Tampilkan toast saat aplikasi berada di background
-        Toast.makeText(this, "App is in the background", Toast.LENGTH_SHORT).show()
-    
+
+        if (!isBackPressed) {
+            saveLastActivity()
+        }
         // Jika dialog masih menunjukkan, mulai service overlay
         if (isDialogShowing) {
             startOverlayService()
@@ -240,22 +264,14 @@ class MainActivity : FlutterActivity() {
         super.onSaveInstanceState(outState)
     
         // Simpan nama aktivitas terakhir yang relevan
-        outState.putString("last_activity", MainActivity::class.java.name)
+        outState.putBoolean("isBackPressed", isBackPressed)
     }
     
     // Mengambil data aktivitas yang disimpan saat instance dipulihkan
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-    
-        // Mengambil nama aktivitas terakhir dari savedInstanceState
-        val lastActivity = savedInstanceState.getString("last_activity")
-        if (lastActivity != null) {
-            // Jika ada nama aktivitas yang disimpan, jalankan aktivitas tersebut
-            val intent = Intent()
-            intent.setClassName(this, lastActivity)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-        }
+
+        isBackPressed = savedInstanceState.getBoolean("isBackPressed", false)
     }
     
     // Mengambil aktivitas terakhir saat aplikasi kembali dari latar belakang (di onResume)

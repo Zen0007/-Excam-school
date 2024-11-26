@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.excam">
-    <!-- permision admin app disable -->
-    <!-- <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" /> -->
     <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-
+    <!-- permision admin app disable -->
+    <!-- <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" /> -->
+   
     <application android:resizeableActivity="false"
     android:launchMode="singleTask"
     android:label="excam" 

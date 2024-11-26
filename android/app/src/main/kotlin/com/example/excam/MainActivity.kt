@@ -25,7 +25,7 @@ class MainActivity : FlutterActivity() {
     private var isDialogShowing = false // Track if the dialog is currently showing
     private val REQUEST_CODE = 1
     private var isBackPressed = false
-
+    private var isOverlayServiceStarted = false 
 
     companion object {
         const val CHANNEL = "kiosk_mode_channel"
@@ -43,10 +43,10 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        if (savedInstanceState != null && !isBackPressed) {
-            // Pulihkan aktivitas terakhir
-            restoreLastActivity()
-        }
+        // if (savedInstanceState != null && !isBackPressed) {
+        //     // Pulihkan aktivitas terakhir
+        //     restoreLastActivity()
+        // }
       
     }
     
@@ -98,8 +98,8 @@ class MainActivity : FlutterActivity() {
     
     private fun startOverlayService() {
         // Start overlay service if needed
-        val serviceIntent = Intent(this, LockTaskService::class.java)
-       startService(serviceIntent)
+            val serviceIntent = Intent(this, LockTaskService::class.java)
+            startService(serviceIntent)
     }
     
     private fun showOverlayPermissionDialog(context: Context) {
@@ -143,25 +143,23 @@ class MainActivity : FlutterActivity() {
             saveLastActivity()
         }
         // Jika dialog masih menunjukkan, mulai service overlay
-        if (isDialogShowing) {
+         if (isDialogShowing) {
             startOverlayService()
         }
     }
     
     override fun onBackPressed() {
-        // Simpan aktivitas terakhir
-        saveLastActivity()
-        isBackPressed = true
-        // Tampilkan toast saat tombol kembali ditekan
-        Toast.makeText(this, "Back to menu the app", Toast.LENGTH_SHORT).show()
-    
-        // Jika dialog masih menunjukkan, mulai service overlay
-        if (isDialogShowing) {
-            startOverlayService()
+        if (!isOverlayServiceStarted) {
+            isBackPressed = true
+            saveLastActivity()
+            
+            if (isDialogShowing) {
+                startOverlayService()
+                isOverlayServiceStarted = true
+            }
+            
+            navigateBack()
         }
-    
-        // Ambil nama aktivitas terakhir dari SharedPreferences
-        navigateBack()
     }
 
     
@@ -178,7 +176,6 @@ class MainActivity : FlutterActivity() {
                     )
                 }
                 startActivity(intent)
-                finish()
             } catch (e: ClassNotFoundException) {
                 Log.e("RestoreActivity", "Aktivitas tidak ditemukan", e)
             }
@@ -211,6 +208,10 @@ class MainActivity : FlutterActivity() {
             val intent = Intent(this, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
+
+        }finally {
+            // Reset flag setelah navigasi selesai
+            isOverlayServiceStarted = false
         }
     }
 
@@ -237,11 +238,9 @@ class MainActivity : FlutterActivity() {
     // Menangani status saat jendela fokus berubah
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-    
+         // Simpan aktivitas terakhir saat kehilangan fokus
+         saveLastActivity()
         if (!hasFocus) {
-            // Simpan aktivitas terakhir saat kehilangan fokus
-            saveLastActivity()
-    
             // Mencegah aplikasi masuk ke background dengan memindahkan task ke home screen
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_HOME)
@@ -252,6 +251,7 @@ class MainActivity : FlutterActivity() {
             if (isDialogShowing) {
                 startOverlayService()
             }
+
     
             Toast.makeText(this, "App is not focused", Toast.LENGTH_SHORT).show()
         } else {

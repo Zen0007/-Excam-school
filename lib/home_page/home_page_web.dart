@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:excam/navigation_delegate/main_template.dart';
 import 'package:excam/navigation_delegate/on_http_error.dart';
-//import 'package:excam/navigation_delegate/on_progress.dart';
 import 'package:excam/navigation_delegate/on_web_resource_error.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 class HomePageWeb extends StatefulWidget {
   const HomePageWeb({super.key});
@@ -20,71 +23,97 @@ class _HomePageWebState extends State<HomePageWeb> {
   final player = AudioPlayer();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  late String currentEmail = '';
-  final WebViewController webViewController = WebViewController();
+  late String currentUri = '';
+  late final WebViewController webViewController;
   static const String reg =
       r'^(https?:\/\/)?((www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}|localhost|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))(\/[^\s]*)?$';
   bool isValidate = true;
-  static const MethodChannel platform = MethodChannel('kiosk_mode_channel');
-  final FocusNode _focusNode = FocusNode();
+  static const MethodChannel platform = MethodChannel("kiosk_mode_channel");
 
   @override
   void dispose() {
     _nameController.dispose();
     webViewController.clearCache();
-    _focusNode.dispose();
     super.dispose();
   }
 
-  @override
-  void initState() {
-    // Request focus after the widget is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(_focusNode);
-    });
-    super.initState();
-  }
-
   void webView(String url) {
+    final finalUri = url.toLowerCase().replaceAll(" ", "");
     try {
-      webViewController
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onHttpError: (error) {
-              debugPrint('on http Error ');
+      setState(() {
+        // #docregion platform_features
+        // ignore: unused_local_variable
+        late PlatformWebViewControllerCreationParams params;
+        if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+          params = WebKitWebViewControllerCreationParams(
+            allowsInlineMediaPlayback: true,
+            mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+          );
+        } else {
+          params = const PlatformWebViewControllerCreationParams();
+        }
 
-              runApp(
-                MainTemplate(
-                  templateWigate: OnHttpError(audio: audio, error: error),
-                ),
-              );
-            },
-            onWebResourceError: (error) {
-              debugPrint('on web resourece error ');
+        final WebViewController controller =
+            WebViewController.fromPlatformCreationParams(params);
 
-              runApp(
-                MainTemplate(
-                  templateWigate: OnWebResourceError(
-                    audio: audio,
-                    error: error,
+        controller
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onHttpError: (error) {
+                debugPrint('on http Error ${error.response!.headers} ');
+                debugPrint('on http error ${error.request!.uri}');
+                debugPrint('on http error ${error.response!.statusCode}');
+                runApp(
+                  MainTemplate(
+                    templateWigate: OnHttpError(
+                      audio: audio,
+                      error: error,
+                    ),
                   ),
-                ),
+                );
+              },
+              onWebResourceError: (error) {
+                debugPrint('on web resourece error ${error.description}');
+                debugPrint('on web resourece error ${error.errorCode}');
+                debugPrint('on web resourece error ${error.url}');
+
+                runApp(
+                  MainTemplate(
+                    templateWigate: OnWebResourceError(
+                      audio: audio,
+                      error: error,
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
+          ..addJavaScriptChannel(
+            'Toaster',
+            onMessageReceived: (JavaScriptMessage message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message.message)),
               );
             },
-          ),
-        )
-        ..addJavaScriptChannel(
-          'Toaster',
-          onMessageReceived: (JavaScriptMessage message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message.message)),
-            );
-          },
-        )
-        ..loadRequest(
-          Uri.parse(url),
-        );
+          )
+          ..loadRequest(
+            Uri.parse(finalUri),
+          );
+
+        if (kIsWeb || !Platform.isMacOS) {
+          controller.setBackgroundColor(const Color.fromARGB(128, 81, 79, 79));
+        }
+
+        // #docregion platform_features
+        if (controller.platform is AndroidWebViewController) {
+          AndroidWebViewController.enableDebugging(true);
+          (controller.platform as AndroidWebViewController)
+              .setMediaPlaybackRequiresUserGesture(false);
+        }
+
+        webViewController = controller;
+      });
     } catch (e, s) {
       debugPrint("$e");
       debugPrint("$s");
@@ -94,8 +123,6 @@ class _HomePageWebState extends State<HomePageWeb> {
   void _sumbit(BuildContext content) {
     try {
       if (_formKey.currentState!.validate()) {
-        webView(_nameController.text);
-        debugPrint(currentEmail);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.white,
@@ -115,6 +142,8 @@ class _HomePageWebState extends State<HomePageWeb> {
         if (!isValidate) {
           start(context);
         }
+
+        webView(_nameController.text);
       }
     } catch (e, s) {
       debugPrint("$e");
@@ -169,7 +198,7 @@ class _HomePageWebState extends State<HomePageWeb> {
 
   void start(BuildContext context) async {
     try {
-      await platform.invokeMethod('startKioskMode');
+      await platform.invokeMethod("startKioskMode");
       debugPrint("Kiosk Mode started");
 
       if (!context.mounted) {
@@ -278,7 +307,6 @@ class _HomePageWebState extends State<HomePageWeb> {
                         ),
                         keyboardType: TextInputType.url,
                         controller: _nameController,
-                        focusNode: _focusNode,
                         enableSuggestions: true,
                         validator: (value) {
                           if (!value!.contains(RegExp(reg))) {

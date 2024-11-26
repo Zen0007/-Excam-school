@@ -1,4 +1,4 @@
-import 'package:excam/test_mode.dart';
+import 'package:excam/home_page/home_page_web.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const TestMode(),
+      home: const HomePageWeb(),
     );
   }
 }

@@ -39,6 +39,7 @@ class _HomePageWebState extends State<HomePageWeb> {
 
   void webView(String url) {
     final finalUri = url.toLowerCase().replaceAll(" ", "");
+
     try {
       setState(() {
         // #docregion platform_features
@@ -152,12 +153,12 @@ class _HomePageWebState extends State<HomePageWeb> {
   }
 
   void audio() async {
-    VolumeController().getVolume().then(
-      (value) {
-        debugPrint("$value");
+    final volume = VolumeController.instance.getVolume();
+    volume.then(
+      (value) async {
         if (value < 1.0) {
-          VolumeController().setVolume(0.5);
-          debugPrint("$value < 1.0");
+          await VolumeController.instance.setVolume(1.0);
+          debugPrint("$value");
         }
       },
     );
@@ -168,7 +169,7 @@ class _HomePageWebState extends State<HomePageWeb> {
       player.play();
       debugPrint("start");
       Timer(
-        const Duration(seconds: 10),
+        const Duration(seconds: 30),
         () {
           player.stop();
           debugPrint("stop");
@@ -231,39 +232,7 @@ class _HomePageWebState extends State<HomePageWeb> {
               ElevatedButton(
                 onPressed: () {
                   audio();
-                  showAdaptiveDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog.adaptive(
-                        content: const Text(
-                          "you want to leave",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        actions: [
-                          ElevatedButton(
-                            onPressed: () {
-                              end(context);
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              "Yes",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  );
+                  leaveFromexam(context);
                 },
                 child: const Text("EXIT"),
               ),
@@ -309,7 +278,15 @@ class _HomePageWebState extends State<HomePageWeb> {
                         controller: _nameController,
                         enableSuggestions: true,
                         validator: (value) {
-                          if (!value!.contains(RegExp(reg))) {
+                          if (value == null) {
+                            return 'input tidak boleh kosong';
+                          }
+                          final finalUri = value
+                              .toLowerCase()
+                              .replaceAll(" ", "")
+                              .toLowerCase();
+
+                          if (!finalUri.contains(RegExp(reg))) {
                             return 'masukan url yang benar';
                           }
                           if (value.isEmpty) {
@@ -374,6 +351,41 @@ class _HomePageWebState extends State<HomePageWeb> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<dynamic> leaveFromexam(BuildContext context) {
+    return showAdaptiveDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog.adaptive(
+          content: const Text(
+            "you want to leave",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                end(context);
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                "Yes",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                "Cancel",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 }

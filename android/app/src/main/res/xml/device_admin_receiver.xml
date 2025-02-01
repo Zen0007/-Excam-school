@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- <?xml version="1.0" encoding="utf-8"?>
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
         <policy android:name="android.app.device_admin.ACTIVATE_DEVICE_ADMIN" />
@@ -17,4 +17,4 @@
         <policy android:name="android.app.device_admin.DISALLOW_MOUNT_PHYSICAL_MEDIA" />
         <policy android:name="android.app.device_admin.DISALLOW_ADJUST_VOLUME" />
     </uses-policies>
-</device-admin>
+</device-admin> -->
